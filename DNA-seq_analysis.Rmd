@@ -81,7 +81,6 @@ nohup zsh deviate-family.sh iil PPI251 > /Volumes/Data/Projects/invaded_inbred_l
 De-multiplexing as before ...
 
 
-
 Converting directory of BAM files to gzipped FASTQ files and splitting PE into separate forward and reverse reads.
 
 ``` {bash eval=FALSE}
