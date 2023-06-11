@@ -1,7 +1,7 @@
 Invaded-inbred lines DNA-seq analysis
 ================
 Matthew Beaumont
-2023-05-30
+2023-06-11
 
 We were provided with the following BAM files containing the multiplexed
 DNA sequencing reads for all of our samples (plus the i-seq probe).
@@ -73,7 +73,34 @@ PE into separate forward and reverse reads.
 ``` bash
 for file in /path/to/directory/*.bam; do
     base=$(basename "$file" .bam)
-    samtools fastq -1 "${base}_1.fq.gz" -2 "${base}_2.fq.gz" -0 /dev/null -s /dev/null -n "$file"
+    samtools fastq -1 "demultiplexed/${base}_1.fq.gz" -2 "demultiplexed/${base}_2.fq.gz" -0 /dev/null -s /dev/null -n "$file"
+done
+```
+
+# Renaming FastQ files
+
+We then realised that the identifier lines of our PE fastq.gz read files
+were not annotated with a /1 or /2, for forward and reverse reads
+respectively, which would cause some errors down the line. So we ran the
+following script in order to fix this.
+
+``` bash
+# Specify the output directory
+output_directory="/Volumes/Data/Projects/invaded_inbred_lines/dna/demultiplexed/renamed_fastq2"
+
+# Create the output directory if it doesn't exist
+mkdir -p "$output_directory"
+
+# Process forward reads
+for file in /Volumes/Data/Projects/invaded_inbred_lines/dna/demultiplexed/fastq2/*_1.fq.gz; do
+    output_file="$output_directory/renamed_${file##*/}"
+    gzip -cd "$file" | paste - - - - | awk '{print $1"/1"; print $2; print $3; print $4}' | tr '\t' '\n' | gzip -c > "$output_file"
+done
+
+# Process reverse reads
+for file in /Volumes/Data/Projects/invaded_inbred_lines/dna/demultiplexed/fastq2/*_2.fq.gz; do
+    output_file="$output_directory/renamed_${file##*/}"
+    gzip -cd "$file" | paste - - - - | awk '{print $1"/2"; print $2; print $3; print $4}' | tr '\t' '\n' | gzip -c > "$output_file"
 done
 ```
 
@@ -85,7 +112,7 @@ To begin, we concatenated the D. mel reference genome (r6.51) with the
 P-element to generate the following FASTA file -
 
 ``` bash
-cd /Volumes/Data/Tools/RefGenomes/dmel/dna
+cd /Volumes/Data/Tools/RefGenomes/dmel/dna/dmel_PPI251/
 ls -h dmelall*.fasta
 ```
 
@@ -121,7 +148,7 @@ done
 wait
 
 for sample in "${samples[@]}"; do
-    java -jar "$popte2_jar" se2pe --fastq1 "/Volumes/Data/Projects/invaded_inbred_lines/dna/demultiplexed/fastq/${sample}_1.fq.gz" \
+    java -Duser.country=US -Duser.language=en -jar "$popte2_jar" se2pe --fastq1 "/Volumes/Data/Projects/invaded_inbred_lines/dna/demultiplexed/fastq/${sample}_1.fq.gz" \
         --fastq2 "/Volumes/Data/Projects/invaded_inbred_lines/dna/demultiplexed/fastq/${sample}_2.fq.gz" \
         --bam1 "RefGenomes/map/${sample}_1.sam" \
         --bam2 "RefGenomes/map/${sample}_2.sam" \
@@ -130,7 +157,7 @@ done
 
 wait
 
-java -jar "$popte2_jar" ppileup --bam RefGenomes/Dmel_1.sort.bam --bam RefGenomes/Dmel_2.sort.bam \
+java -Duser.country=US -Duser.language=en -jar "$popte2_jar" ppileup --bam RefGenomes/Dmel_1.sort.bam --bam RefGenomes/Dmel_2.sort.bam \
     --bam RefGenomes/Dmel_3.sort.bam --bam RefGenomes/Dmel_4.sort.bam --bam RefGenomes/Dmel_5.sort.bam \
     --bam RefGenomes/Dmel_6.sort.bam --bam RefGenomes/Dmel_7.sort.bam --bam RefGenomes/Dmel_8.sort.bam \
     --bam RefGenomes/Dmel_9.sort.bam --bam RefGenomes/Dmel_10.sort.bam --bam RefGenomes/Dmel_N1.sort.bam \
@@ -141,15 +168,22 @@ Then we ran the basic PoPoolationTE2 pipeline to assess P-element
 insertion location and abundance in the different populations.
 
 ``` bash
+# We need to subsample the ppileup file to a chosen coverage depth to generate am unbiased comparison of P-element abundance.
+# java -Duser.country=US -Duser.language=en -jar popte2.jar subsampleppileup --ppileup dmel.ppileup.gz --target-coverage 100 --output output.ss100.ppileup.gz
+
 # First we generate a file of the found P-element insertions and their locations.
-java -jar PopoolationTE2/popte2.jar identifySignatures --ppileup dmel.ppileup.gz --mode separate --output dmel/dmel.signatures --min-count 3
+java -Duser.country=US -Duser.language=en -jar /Volumes/Data/Tools/PopoolationTE2/popte2-v1.10.03.jar identifySignatures --ppileup Dmel.ppileup.gz --mode separate --output ../popTE2/dmel.signatures --min-count 3
+java -Duser.country=US -Duser.language=en -jar /Volumes/Data/Tools/PopoolationTE2/popte2-v1.10.03.jar identifySignatures --ppileup /Volumes/Data/Projects/invaded_inbred_lines/dna/ppileup/Dsim.ppileup.gz --mode separate --output /Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dsim.signatures --min-count 3
 
 # Then we look at the frequency of the found signatures.
-java -jar PopoolationTE2/popte2.jar frequency --ppileup dmel.ppileup.gz --signature dmel/dmel.signatures --output dmel/dmel.freqsig
+java -Duser.country=US -Duser.language=en -jar /Volumes/Data/Tools/PopoolationTE2/popte2-v1.10.03.jar frequency --ppileup /Volumes/Data/Projects/invaded_inbred_lines/dna/ppileup/Dmel.ppileup.gz --signature /Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dmel.signatures --output /Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dmel.freqsig
+
 
 # Finally, we combine it all together. 
-java -jar PopoolationTE2/popte2.jar pairupSignatures --signature dmel/dmel.freqsig --ref-genome RefGenomes/dmelallchrom-r6.51_PPI251.fasta --hier hierarchies/pelement.tehier --min-distance -200 --max-distance 300 --output dmel/dmel.teinsertions
+java -Duser.country=US -Duser.language=en -jar PopoolationTE2/popte2.jar pairupSignatures --signature dmel/dmel.freqsig --ref-genome RefGenomes/dmelallchrom-r6.51_PPI251.fasta --hier hierarchies/pelement.tehier --min-distance -200 --max-distance 300 --output dmel/dmel.teinsertions
 ```
 
 This provides us with a list of P-element insertions found in all 11
 samples for each species, their location and population frequency.
+
+# Visualisation
