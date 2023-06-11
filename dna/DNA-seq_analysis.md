@@ -32,20 +32,21 @@ samtools view --threads 10 /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/i
 samtools view --threads 10 /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/HY5WYDRX2_1_20230419B_20230420.bam | paste -d "|" - - | tee   >(grep BC:Z:CATGGC |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/output/primer34.bam) >(grep BC:Z:CCAACA |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/output/primer36.bam) >(grep BC:Z:TAATCG |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/output/primer42.bam) >(grep BC:Z:CGGAAT |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/output/primer37.bam) >(grep BC:Z:CTAGCT |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/output/primer38.bam) >(grep BC:Z:CTATAC |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/output/primer39.bam) >(grep BC:Z:GTGATC |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/output/primer40.bam) >(grep BC:Z:GACGAC |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/output/primer41.bam) >(grep BC:Z:TACAGC |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/output/primer43.bam) >(grep BC:Z:TATAAT |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/output/primer44.bam) >(grep BC:Z:TCATTC |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/output/primer45.bam) >(grep BC:Z:TCCCGA |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/output/primer46.bam) >(grep BC:Z:TCGAAG |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/output/primer47.bam) >(grep BC:Z:TCGGCA |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/output/primer48.bam)
 ```
 
-Bam to fq.gz
+# BAM to FASTQ
+
+Converting directory of BAM files to gzipped FASTQ files and splitting
+PE into separate forward and reverse reads.
 
 ``` bash
-for i in D*bam;
-do n=${i%.bam};
-samtools view $i| tee >(awk 'NR%2 == 1'| awk '{print "@" $1"/1"; print $10; print "+" $1"/1";
-print $11}'| gzip -c > ${n}_1.fq.gz)| awk 'NR%2 == 0'| awk '{print "@" $1"/2"; print $10; print  
-"+" $1"/2"; print $11}'| gzip -c > ${n}_2.fq.gz;   
+for file in /path/to/directory/*.bam; do
+    base=$(basename "$file" .bam)
+    samtools fastq -1 "demultiplexed/${base}_1.fq.gz" -2 "demultiplexed/${base}_2.fq.gz" -0 /dev/null -s /dev/null -n "$file"
 done
 ```
 
 # Quality control
 
-We then ran teh FastQC tool to reassess the quality of the fq.gz files
+We then ran the FastQC tool to reassess the quality of the fq.gz files
 for each individual sample, granting the following results.
 
 ``` bash
@@ -61,20 +62,6 @@ nohup zsh fastq-miner.sh iil /Volumes/Data/Projects/invaded_inbred_lines/dna/raw
 
 ``` bash
 nohup zsh deviate-family.sh iil PPI251 > /Volumes/Data/Projects/invaded_inbred_lines/logs/IIlines.log &
-```
-
-# Attempt 2
-
-De-multiplexing as before …
-
-Converting directory of BAM files to gzipped FASTQ files and splitting
-PE into separate forward and reverse reads.
-
-``` bash
-for file in /path/to/directory/*.bam; do
-    base=$(basename "$file" .bam)
-    samtools fastq -1 "demultiplexed/${base}_1.fq.gz" -2 "demultiplexed/${base}_2.fq.gz" -0 /dev/null -s /dev/null -n "$file"
-done
 ```
 
 # Renaming FastQ files
@@ -103,6 +90,8 @@ for file in /Volumes/Data/Projects/invaded_inbred_lines/dna/demultiplexed/fastq2
     gzip -cd "$file" | paste - - - - | awk '{print $1"/2"; print $2; print $3; print $4}' | tr '\t' '\n' | gzip -c > "$output_file"
 done
 ```
+
+Perhaps unneccessary.
 
 \#PopoolationTE2
 
@@ -135,33 +124,39 @@ nohup zsh PopoolationTE2/PPileupGen.sh > logs/PPileupGen.log
 ``` bash
 #!/bin/bash
 
-ref_genome="RefGenomes/dmel/dmelallchrom-r6.51_PPI251.fasta"
-popte2_jar="PopoolationTE2/popte2-v1.10.03.jar"
-hier_file="pelement.hier"
-samples=("Dmel_1" "Dmel_2" "Dmel_3" "Dmel_4" "Dmel_5" "Dmel_6" "Dmel_7" "Dmel_8" "Dmel_9" "Dmel_10" "Dmel_N1")
+ref_genome="/Volumes/Data/Tools/RefGenomes/dyak/dyak_prin_Tai18E2_2.1_PPI251.fasta"
+popte2_jar="/Volumes/Data/Tools/PopoolationTE2/popte2-v1.10.03.jar"
+hier_file="/Volumes/Data/Tools/RefGenomes/hierarchies/pelement.hier"
+samples=("Dyak_21" "Dyak_22" "Dyak_23" "Dyak_24" "Dyak_25" "Dyak_26" "Dyak_27" "Dyak_28" "Dyak_29" "Dyak_30" "Dyak_N3")
 
 for sample in "${samples[@]}"; do
-    bwa bwasw -t 10 "$ref_genome" "/Volumes/Data/Projects/invaded_inbred_lines/dna/demultiplexed/fastq/${sample}_1.fq.gz" > "RefGenomes/map/${sample}_1.sam" &
-    bwa bwasw -t 10 "$ref_genome" "/Volumes/Data/Projects/invaded_inbred_lines/dna/demultiplexed/fastq/${sample}_2.fq.gz" > "RefGenomes/map/${sample}_2.sam" &
+   bwa mem -M -t 2 "$ref_genome" "/Volumes/Data/Projects/invaded_inbred_lines/dna/demultiplexed/fastq/${sample}_1.fq.gz" > "/Volumes/Data/Projects/invaded_inbred_lines/dna/map/unpaired/${sample}_1.sam" &
+   bwa mem -M -t 2 "$ref_genome" "/Volumes/Data/Projects/invaded_inbred_lines/dna/demultiplexed/fastq/${sample}_2.fq.gz" > "/Volumes/Data/Projects/invaded_inbred_lines/dna/map/unpaired/${sample}_2.sam" &
 done
-
 wait
 
 for sample in "${samples[@]}"; do
     java -Duser.country=US -Duser.language=en -jar "$popte2_jar" se2pe --fastq1 "/Volumes/Data/Projects/invaded_inbred_lines/dna/demultiplexed/fastq/${sample}_1.fq.gz" \
         --fastq2 "/Volumes/Data/Projects/invaded_inbred_lines/dna/demultiplexed/fastq/${sample}_2.fq.gz" \
-        --bam1 "RefGenomes/map/${sample}_1.sam" \
-        --bam2 "RefGenomes/map/${sample}_2.sam" \
-        --sort --output "RefGenomes/${sample}.sort.bam" &
+        --bam1 "/Volumes/Data/Projects/invaded_inbred_lines/dna/map/unpaired/${sample}_1.sam" \
+        --bam2 "/Volumes/Data/Projects/invaded_inbred_lines/dna/map/unpaired/${sample}_2.sam" \
+        --sort --output "/Volumes/Data/Projects/invaded_inbred_lines/dna/map/paired/${sample}.sort.bam" &
 done
-
 wait
 
-java -Duser.country=US -Duser.language=en -jar "$popte2_jar" ppileup --bam RefGenomes/Dmel_1.sort.bam --bam RefGenomes/Dmel_2.sort.bam \
-    --bam RefGenomes/Dmel_3.sort.bam --bam RefGenomes/Dmel_4.sort.bam --bam RefGenomes/Dmel_5.sort.bam \
-    --bam RefGenomes/Dmel_6.sort.bam --bam RefGenomes/Dmel_7.sort.bam --bam RefGenomes/Dmel_8.sort.bam \
-    --bam RefGenomes/Dmel_9.sort.bam --bam RefGenomes/Dmel_10.sort.bam --bam RefGenomes/Dmel_N1.sort.bam \
-    --map-qual 15 --hier "$hier_file" --output RefGenomes/Dmel.ppileup.gz
+java -Duser.country=US -Duser.language=en -jar "$popte2_jar" ppileup \
+    --bam /Volumes/Data/Projects/invaded_inbred_lines/dna/map/paired/Dyak_21.sort.bam \
+    --bam /Volumes/Data/Projects/invaded_inbred_lines/dna/map/paired/Dyak_22.sort.bam \
+    --bam /Volumes/Data/Projects/invaded_inbred_lines/dna/map/paired/Dyak_23.sort.bam \
+    --bam /Volumes/Data/Projects/invaded_inbred_lines/dna/map/paired/Dyak_24.sort.bam \
+    --bam /Volumes/Data/Projects/invaded_inbred_lines/dna/map/paired/Dyak_25.sort.bam \
+    --bam /Volumes/Data/Projects/invaded_inbred_lines/dna/map/paired/Dyak_26.sort.bam \
+    --bam /Volumes/Data/Projects/invaded_inbred_lines/dna/map/paired/Dyak_27.sort.bam \
+    --bam /Volumes/Data/Projects/invaded_inbred_lines/dna/map/paired/Dyak_28.sort.bam \
+    --bam /Volumes/Data/Projects/invaded_inbred_lines/dna/map/paired/Dyak_29.sort.bam \
+    --bam /Volumes/Data/Projects/invaded_inbred_lines/dna/map/paired/Dyak_30.sort.bam \
+    --bam /Volumes/Data/Projects/invaded_inbred_lines/dna/map/paired/Dyak_N3.sort.bam \
+    --map-qual 15 --hier "$hier_file" --output /Volumes/Data/Projects/invaded_inbred_lines/dna/ppileup/Dyak.ppileup.gz
 ```
 
 Then we ran the basic PoPoolationTE2 pipeline to assess P-element
