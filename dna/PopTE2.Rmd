@@ -1,0 +1,625 @@
+---
+title: "PopTE2"
+author: "Matthew Beaumont"
+date: "`r Sys.Date()`"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# PopoolationTE2
+
+First, we needed to construct the required ppileup file.
+
+To begin, we concatenated the D. mel reference genome (r6.51) with the P-element to generate the following FASTA file -
+
+```{bash}
+cd /Volumes/Data/Tools/RefGenomes/dmel/dna/dmel_PPI251/
+ls -h dmelall*.fasta
+
+```
+
+Then created an index and /map directory for later steps.
+
+```{bash eval=FALSE}
+bwa index walkthrough-refgenome/2R-603-consensusTE.fasta
+
+dyak % bwa index /Volumes/Data/Tools/RefGenomes/dyak/dna_pele/dyak_allchrom_1.3_PPI251.fasta 
+mkdir map
+
+```
+
+Then we ran the following PPileupGen.sh script on the pairs of forward and reverse reads, generating the required PPileup file.
+
+```{bash eval=FALSE}
+nohup zsh PopoolationTE2/PPileupGen.sh > logs/PPileupGen.log
+
+```
+
+```{bash eval=FALSE}
+#!/bin/bash
+
+ref_genome="/Volumes/Data/Tools/RefGenomes/dyak/dyak_prin_Tai18E2_2.1_PPI251.fasta"
+popte2_jar="/Volumes/Data/Tools/PopoolationTE2/popte2-v1.10.03.jar"
+hier_file="/Volumes/Data/Tools/RefGenomes/hierarchies/pelement.hier"
+samples=("Dyak_21" "Dyak_22" "Dyak_23" "Dyak_24" "Dyak_25" "Dyak_26" "Dyak_27" "Dyak_28" "Dyak_29" "Dyak_30" "Dyak_N3")
+
+for sample in "${samples[@]}"; do
+   bwa mem -M -t 2 "$ref_genome" "/Volumes/Data/Projects/invaded_inbred_lines/dna/demultiplexed/fastq/${sample}_1.fq.gz" > "/Volumes/Data/Projects/invaded_inbred_lines/dna/map/unpaired/${sample}_1.sam" &
+   bwa mem -M -t 2 "$ref_genome" "/Volumes/Data/Projects/invaded_inbred_lines/dna/demultiplexed/fastq/${sample}_2.fq.gz" > "/Volumes/Data/Projects/invaded_inbred_lines/dna/map/unpaired/${sample}_2.sam" &
+done
+wait
+
+for sample in "${samples[@]}"; do
+    java -Duser.country=US -Duser.language=en -jar "$popte2_jar" se2pe --fastq1 "/Volumes/Data/Projects/invaded_inbred_lines/dna/demultiplexed/fastq/${sample}_1.fq.gz" \
+        --fastq2 "/Volumes/Data/Projects/invaded_inbred_lines/dna/demultiplexed/fastq/${sample}_2.fq.gz" \
+        --bam1 "/Volumes/Data/Projects/invaded_inbred_lines/dna/map/unpaired/${sample}_1.sam" \
+        --bam2 "/Volumes/Data/Projects/invaded_inbred_lines/dna/map/unpaired/${sample}_2.sam" \
+        --sort --output "/Volumes/Data/Projects/invaded_inbred_lines/dna/map/paired/${sample}.sort.bam" &
+done
+wait
+
+java -Duser.country=US -Duser.language=en -jar "$popte2_jar" ppileup \
+    --bam /Volumes/Data/Projects/invaded_inbred_lines/dna/map/paired/Dyak_21.sort.bam \
+    --bam /Volumes/Data/Projects/invaded_inbred_lines/dna/map/paired/Dyak_22.sort.bam \
+    --bam /Volumes/Data/Projects/invaded_inbred_lines/dna/map/paired/Dyak_23.sort.bam \
+    --bam /Volumes/Data/Projects/invaded_inbred_lines/dna/map/paired/Dyak_24.sort.bam \
+    --bam /Volumes/Data/Projects/invaded_inbred_lines/dna/map/paired/Dyak_25.sort.bam \
+    --bam /Volumes/Data/Projects/invaded_inbred_lines/dna/map/paired/Dyak_26.sort.bam \
+    --bam /Volumes/Data/Projects/invaded_inbred_lines/dna/map/paired/Dyak_27.sort.bam \
+    --bam /Volumes/Data/Projects/invaded_inbred_lines/dna/map/paired/Dyak_28.sort.bam \
+    --bam /Volumes/Data/Projects/invaded_inbred_lines/dna/map/paired/Dyak_29.sort.bam \
+    --bam /Volumes/Data/Projects/invaded_inbred_lines/dna/map/paired/Dyak_30.sort.bam \
+    --bam /Volumes/Data/Projects/invaded_inbred_lines/dna/map/paired/Dyak_N3.sort.bam \
+    --map-qual 15 --hier "$hier_file" --output /Volumes/Data/Projects/invaded_inbred_lines/dna/ppileup/Dyak.ppileup.gz
+
+```
+
+Then we ran the basic PoPoolationTE2 pipeline to assess P-element insertion location and abundance in the different populations.
+
+``` {bash eval=FALSE}
+# We need to subsample the ppileup file to a chosen coverage depth to generate am unbiased comparison of P-element abundance.
+# java -Duser.country=US -Duser.language=en -jar popte2.jar subsampleppileup --ppileup dmel.ppileup.gz --target-coverage 100 --output output.ss100.ppileup.gz
+
+# First we generate a file of the found P-element insertions and their locations.
+java -Duser.country=US -Duser.language=en -jar /Volumes/Data/Tools/PopoolationTE2/popte2-v1.10.03.jar identifySignatures --ppileup /Volumes/Data/Projects/invaded_inbred_lines/dna/ppileup/Dmel.ppileup.gz --mode separate --output /Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dmel.signatures --min-count 3
+
+java -Duser.country=US -Duser.language=en -jar /Volumes/Data/Tools/PopoolationTE2/popte2-v1.10.03.jar identifySignatures --ppileup /Volumes/Data/Projects/invaded_inbred_lines/dna/ppileup/Dsim.ppileup.gz --mode separate --output /Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dsim.signatures --min-count 3
+
+java -Duser.country=US -Duser.language=en -jar /Volumes/Data/Tools/PopoolationTE2/popte2-v1.10.03.jar identifySignatures --ppileup /Volumes/Data/Projects/invaded_inbred_lines/dna/ppileup/Dyak.ppileup.gz --mode separate --output /Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dyak.signatures --min-count 3
+
+# Then we look at the frequency of the found signatures.
+java -Duser.country=US -Duser.language=en -jar /Volumes/Data/Tools/PopoolationTE2/popte2-v1.10.03.jar frequency --ppileup /Volumes/Data/Projects/invaded_inbred_lines/dna/ppileup/Dmel.ppileup.gz --signature /Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dmel.signatures --output /Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dmel.freqsig
+
+java -Duser.country=US -Duser.language=en -jar /Volumes/Data/Tools/PopoolationTE2/popte2-v1.10.03.jar frequency --ppileup /Volumes/Data/Projects/invaded_inbred_lines/dna/ppileup/Dsim.ppileup.gz --signature /Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dsim.signatures --output /Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dsim.freqsig
+
+java -Duser.country=US -Duser.language=en -jar /Volumes/Data/Tools/PopoolationTE2/popte2-v1.10.03.jar frequency --ppileup /Volumes/Data/Projects/invaded_inbred_lines/dna/ppileup/Dyak.ppileup.gz --signature /Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dyak.signatures --output /Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dyak.freqsig
+
+# Finally, we combine it all together. 
+java -Duser.country=US -Duser.language=en -jar /Volumes/Data/Tools/PopoolationTE2/popte2-v1.10.03.jar pairupSignatures --signature /Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dmel.freqsig --ref-genome /Volumes/Data/Tools/RefGenomes/dmel/dna/dmel_PPI251/dmelallchrom-r6.51_PPI251.fasta --hier /Volumes/Data/Tools/RefGenomes/hierarchies/pelement.hier --min-distance -200 --max-distance 300 --output /Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dmel.teinsertions
+
+java -Duser.country=US -Duser.language=en -jar /Volumes/Data/Tools/PopoolationTE2/popte2-v1.10.03.jar pairupSignatures --signature /Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dsim.freqsig --ref-genome /Volumes/Data/Tools/RefGenomes/dsim/dsim_ASM75419v3_PPI251.fasta --hier /Volumes/Data/Tools/RefGenomes/hierarchies/pelement.hier --min-distance -200 --max-distance 300 --output /Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dsim.teinsertions
+
+java -Duser.country=US -Duser.language=en -jar /Volumes/Data/Tools/PopoolationTE2/popte2-v1.10.03.jar pairupSignatures --signature /Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dyak.freqsig --ref-genome /Volumes/Data/Tools/RefGenomes/dyak/dna_pele/dyak_allchrom_1.3_PPI251.fasta --hier /Volumes/Data/Tools/RefGenomes/hierarchies/pelement.hier --min-distance -200 --max-distance 300 --output /Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dyak.teinsertions
+
+```
+
+This provides us with a list of P-element insertions found in all 11 samples for each species, their location and population frequency.
+
+# Manhattan plots
+
+We then visualised the .teinsertion files in Manhattan plots for all samples in each species.
+
+``` {R}
+library(viridisLite)
+library(ggplot2)
+library(gridExtra)
+theme_set(theme_bw())
+
+dm <- read.table("/Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dmel/dmel.teinsertions")
+names(dm) <- c("Sample", "Chromosome", "Position", "Strand", "TE", "Order", "FR", "Comment", "Frequency")
+
+ds <- read.table("/Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dsim/dsim.teinsertions")
+names(ds) <- c("Sample", "Chromosome", "Position", "Strand", "TE", "Order", "FR", "Comment", "Frequency")
+
+dy <- read.table("/Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dyak/dyak.teinsertions")
+names(dy) <- c("Sample", "Chromosome", "Position", "Strand", "TE", "Order", "FR", "Comment", "Frequency")
+
+dm <- subset(dm, Chromosome == "X" | Chromosome == "2L" | Chromosome == "2R" | Chromosome == "3L" | Chromosome == "3R" | Chromosome == "4")
+ds <- subset(ds, Chromosome == "X" | Chromosome == "2L" | Chromosome == "2R" | Chromosome == "3L" | Chromosome == "3R" | Chromosome == "4")
+dy <- subset(dy, Chromosome == "X" | Chromosome == "2L" | Chromosome == "2R" | Chromosome == "3L" | Chromosome == "3R" | Chromosome == "4")
+
+dm$Chromosome <- factor(dm$Chromosome, levels = c("X", "2L", "2R", "3L", "3R", "4"))
+lim <- c(0.0, 0.51)
+ybreaks <- c(0, 0.1, 0.2, 0.3, 0.4, 0.5)
+ds$Chromosome <- factor(ds$Chromosome, levels = c("X", "2L", "2R", "3L", "3R", "4"))
+lim <- c(0.0, 0.51)
+ybreaks <- c(0, 0.1, 0.2, 0.3, 0.4, 0.5)
+dy$Chromosome <- factor(dy$Chromosome, levels = c("X", "2L", "2R", "3L", "3R", "4"))
+lim <- c(0.0, 0.51)
+ybreaks <- c(0, 0.1, 0.2, 0.3, 0.4, 0.5)
+
+sample_colors <- viridisLite::turbo(11)
+
+dm$Sample <- as.factor(dm$Sample)
+ds$Sample <- as.factor(ds$Sample)
+dy$Sample <- as.factor(dy$Sample)
+
+dmp <- ggplot(dm, aes(x = Position, y = Frequency, color = Sample)) +
+  geom_point(size = 0.5) +
+  facet_grid(. ~ Chromosome, scales = "free_x", space = "free_x") +
+  scale_x_continuous(breaks = c(0, 5000000, 10000000, 15000000, 20000000, 25000000),
+                     labels = c("0", "5m", "10m", "15m", "20m", "25m")) +
+  scale_y_continuous(name = "Population frequency", limits = c(min(dm$Frequency), max(dm$Frequency)),
+                     breaks = seq(0, 1, by = 0.1)) +
+  scale_color_manual(values = sample_colors) +  
+  theme(legend.position = "right", 
+          plot.title = element_text(hjust = 0.5, size = 14)) +
+  labs(title = "P-element insertion frequencies in D. melanogaster populations")
+
+
+dsp <- ggplot(ds, aes(x = Position, y = Frequency, color = Sample)) +
+  geom_point(size = 0.5) +
+  facet_grid(. ~ Chromosome, scales = "free_x", space = "free_x") +
+  scale_x_continuous(breaks = c(0, 5000000, 10000000, 15000000, 20000000, 25000000),
+                     labels = c("0", "5m", "10m", "15m", "20m", "25m")) +
+  scale_y_continuous(name = "Population frequency", limits = c(min(ds$Frequency), max(ds$Frequency)),
+                     breaks = seq(0, 1, by = 0.1)) +
+  scale_color_manual(values = sample_colors) +  
+  theme(legend.position = "right", 
+          plot.title = element_text(hjust = 0.5, size = 14)) +
+  labs(title = "P-element insertion frequencies in D. simulans populations")
+
+
+dyp <- ggplot(dy, aes(x = Position, y = Frequency, color = Sample)) +
+  geom_point(size = 0.5) +
+  facet_grid(. ~ Chromosome, scales = "free_x", space = "free_x") +
+  scale_x_continuous(breaks = c(0, 5000000, 10000000, 15000000, 20000000, 25000000),
+                     labels = c("0", "5m", "10m", "15m", "20m", "25m")) +
+  scale_y_continuous(name = "Population frequency", limits = c(min(dy$Frequency), max(dy$Frequency)),
+                     breaks = seq(0, 1, by = 0.1)) +
+  scale_color_manual(values = sample_colors) +  
+  theme(legend.position = "right",
+          plot.title = element_text(hjust = 0.5, size = 14)) +
+  labs(title = "P-element insertion frequencies in D. yakuba populations")
+
+plot(dmp)
+plot(dsp)
+plot(dyp)
+
+```
+
+Then we looked at each sample individually, starting with D. mel.
+
+``` {R}
+# Load libraries
+library(ggplot2)
+library(gridExtra)
+theme_set(theme_bw())
+
+# Function to read data and assign column names
+read_data <- function(file_path) {
+  data <- read.table(file_path)
+  names(data) <- c("Sample", "Chromosome", "Position", "Strand", "TE", "Order", "FR", "Comment", "Frequency")
+  data <- subset(data, Chromosome %in% c("X", "2L", "2R", "3L", "3R", "4"))
+  data$Chromosome <- factor(data$Chromosome, levels = c("X", "2L", "2R", "3L", "3R", "4"))
+  return(data)
+}
+
+# Directory path containing the files
+directory_path <- "/Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dmel/replicates/"
+
+# File pattern to match
+file_pattern <- "*.teinsertions"
+
+# Get the file paths
+file_paths <- list.files(directory_path, pattern = file_pattern, full.names = TRUE)
+
+# Define custom X-axis limits for each chromosome
+chrom_limits <- list(
+  X = c(0, 4180000),
+  `2L` = c(0, 28400000),
+  `2R` = c(0, 32400000),
+  `3L` = c(0, 32600000),
+  `3R` = c(0, 36200000),
+  "4" = c(0, 4300000)
+)
+
+# Read data and create plots
+plots <- lapply(file_paths, function(file) {
+  data <- read_data(file)
+  title <- gsub("\\.teinsertions$", "", basename(file))
+
+  # Create empty data frames for missing chromosomes
+  for (chrom in names(chrom_limits)) {
+    if (!(chrom %in% unique(data$Chromosome))) {
+      empty_data <- data.frame(
+        Sample = NA,
+        Chromosome = factor(chrom, levels = names(chrom_limits)),
+        Position = NA,
+        Strand = NA,
+        TE = NA,
+        Order = NA,
+        FR = NA,
+        Comment = NA,
+        Frequency = NA
+      )
+      data <- rbind(data, empty_data)
+    }
+  }
+
+  # Sort the data by chromosome to maintain consistent facet order
+  data <- data[order(data$Chromosome), ]
+
+  ggplot(data, aes(x = Position, y = Frequency, color = Frequency)) +
+    geom_point(size = 0.5) +
+    facet_grid(. ~ Chromosome, scales = "free_x", space = "free_x") +
+    scale_y_continuous(
+      name = "Population frequency",
+      limits = c(0, 1),  # Set consistent Y-axis limits from 0 to 1
+      breaks = seq(0, 1, by = 0.1)
+    ) +
+    scale_color_gradient(low = "blue", high = "red") +
+    theme(
+      legend.position = "none",
+      plot.title = element_text(hjust = 0.5, size = 14)
+    ) +
+    coord_cartesian(xlim = chrom_limits[[as.character(data$Chromosome[1])]]) +
+    labs(title = paste("P-element insertion frequencies in D. melanogaster -", title))
+})
+
+# Combine and save plots with grid arrangement
+combined_plots <- grid.arrange(grobs = plots, ncol = 2, layout_matrix = rbind(c(1,3), c(4,5), c(6,7), c(8,9), c(10,2)))
+ggsave("dmel_pele_freq.png", combined_plots, width = 18, height = 10, units = "in", dpi = 500)
+
+knitr::include_graphics("dmel_pele_freq.png")
+
+```
+
+Then for D. sim.
+
+``` {R}
+library(ggplot2)
+library(gridExtra)
+theme_set(theme_bw())
+
+ds1 <- read.table("/Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dsim/replicates/1.teinsertions")
+names(ds1) <- c("Sample", "Chromosome", "Position", "Strand", "TE", "Order", "FR", "Comment", "Frequency")
+
+ds2 <- read.table("/Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dsim/replicates/2.teinsertions")
+names(ds2) <- c("Sample", "Chromosome", "Position", "Strand", "TE", "Order", "FR", "Comment", "Frequency")
+
+ds3 <- read.table("/Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dsim/replicates/3.teinsertions")
+names(ds3) <- c("Sample", "Chromosome", "Position", "Strand", "TE", "Order", "FR", "Comment", "Frequency")
+
+ds4 <- read.table("/Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dsim/replicates/4.teinsertions")
+names(ds4) <- c("Sample", "Chromosome", "Position", "Strand", "TE", "Order", "FR", "Comment", "Frequency")
+
+ds5 <- read.table("/Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dsim/replicates/5.teinsertions")
+names(ds5) <- c("Sample", "Chromosome", "Position", "Strand", "TE", "Order", "FR", "Comment", "Frequency")
+
+ds6 <- read.table("/Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dsim/replicates/6.teinsertions")
+names(ds6) <- c("Sample", "Chromosome", "Position", "Strand", "TE", "Order", "FR", "Comment", "Frequency")
+
+ds7 <- read.table("/Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dsim/replicates/7.teinsertions")
+names(ds7) <- c("Sample", "Chromosome", "Position", "Strand", "TE", "Order", "FR", "Comment", "Frequency")
+
+ds8 <- read.table("/Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dsim/replicates/8.teinsertions")
+names(ds8) <- c("Sample", "Chromosome", "Position", "Strand", "TE", "Order", "FR", "Comment", "Frequency")
+
+ds9 <- read.table("/Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dsim/replicates/9.teinsertions")
+names(ds9) <- c("Sample", "Chromosome", "Position", "Strand", "TE", "Order", "FR", "Comment", "Frequency")
+
+ds10 <- read.table("/Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dsim/replicates/10.teinsertions")
+names(ds10) <- c("Sample", "Chromosome", "Position", "Strand", "TE", "Order", "FR", "Comment", "Frequency")
+
+ds1 <- subset(ds1, Chromosome == "X" | Chromosome == "2L" | Chromosome == "2R" | Chromosome == "3L" | Chromosome == "3R" | Chromosome == "4")
+ds2 <- subset(ds2, Chromosome == "X" | Chromosome == "2L" | Chromosome == "2R" | Chromosome == "3L" | Chromosome == "3R" | Chromosome == "4")
+ds3 <- subset(ds3, Chromosome == "X" | Chromosome == "2L" | Chromosome == "2R" | Chromosome == "3L" | Chromosome == "3R" | Chromosome == "4")
+ds4 <- subset(ds4, Chromosome == "X" | Chromosome == "2L" | Chromosome == "2R" | Chromosome == "3L" | Chromosome == "3R" | Chromosome == "4")
+ds5 <- subset(ds5, Chromosome == "X" | Chromosome == "2L" | Chromosome == "2R" | Chromosome == "3L" | Chromosome == "3R" | Chromosome == "4")
+ds6 <- subset(ds6, Chromosome == "X" | Chromosome == "2L" | Chromosome == "2R" | Chromosome == "3L" | Chromosome == "3R" | Chromosome == "4")
+ds7 <- subset(ds7, Chromosome == "X" | Chromosome == "2L" | Chromosome == "2R" | Chromosome == "3L" | Chromosome == "3R" | Chromosome == "4")
+ds8 <- subset(ds8, Chromosome == "X" | Chromosome == "2L" | Chromosome == "2R" | Chromosome == "3L" | Chromosome == "3R" | Chromosome == "4")
+ds9 <- subset(ds9, Chromosome == "X" | Chromosome == "2L" | Chromosome == "2R" | Chromosome == "3L" | Chromosome == "3R" | Chromosome == "4")
+ds10 <- subset(ds10, Chromosome == "X" | Chromosome == "2L" | Chromosome == "2R" | Chromosome == "3L" | Chromosome == "3R" | Chromosome == "4")
+
+ds1$Chromosome <- factor(ds1$Chromosome, levels = c("X", "2L", "2R", "3L", "3R", "4")) 
+    lim <- c(0.0, 0.51) 
+    ybreaks <- c(0, 0.1, 0.2, 0.3, 0.4, 0.5)
+ds2$Chromosome <- factor(ds2$Chromosome, levels = c("X", "2L", "2R", "3L", "3R", "4")) 
+    lim <- c(0.0, 0.51) 
+    ybreaks <- c(0, 0.1, 0.2, 0.3, 0.4, 0.5)
+ds3$Chromosome <- factor(ds3$Chromosome, levels = c("X", "2L", "2R", "3L", "3R", "4")) 
+    lim <- c(0.0, 0.51) 
+    ybreaks <- c(0, 0.1, 0.2, 0.3, 0.4, 0.5)
+ds4$Chromosome <- factor(ds4$Chromosome, levels = c("X", "2L", "2R", "3L", "3R", "4")) 
+    lim <- c(0.0, 0.51) 
+    ybreaks <- c(0, 0.1, 0.2, 0.3, 0.4, 0.5)
+ds5$Chromosome <- factor(ds5$Chromosome, levels = c("X", "2L", "2R", "3L", "3R", "4")) 
+    lim <- c(0.0, 0.51) 
+    ybreaks <- c(0, 0.1, 0.2, 0.3, 0.4, 0.5)
+ds6$Chromosome <- factor(ds6$Chromosome, levels = c("X", "2L", "2R", "3L", "3R", "4")) 
+    lim <- c(0.0, 0.51) 
+    ybreaks <- c(0, 0.1, 0.2, 0.3, 0.4, 0.5)
+ds7$Chromosome <- factor(ds7$Chromosome, levels = c("X", "2L", "2R", "3L", "3R", "4")) 
+    lim <- c(0.0, 0.51) 
+    ybreaks <- c(0, 0.1, 0.2, 0.3, 0.4, 0.5)
+ds8$Chromosome <- factor(ds8$Chromosome, levels = c("X", "2L", "2R", "3L", "3R", "4")) 
+    lim <- c(0.0, 0.51) 
+    ybreaks <- c(0, 0.1, 0.2, 0.3, 0.4, 0.5)
+ds9$Chromosome <- factor(ds9$Chromosome, levels = c("X", "2L", "2R", "3L", "3R", "4")) 
+    lim <- c(0.0, 0.51) 
+    ybreaks <- c(0, 0.1, 0.2, 0.3, 0.4, 0.5)
+ds10$Chromosome <- factor(ds10$Chromosome, levels = c("X", "2L", "2R", "3L", "3R", "4")) 
+    lim <- c(0.0, 0.51) 
+    ybreaks <- c(0, 0.1, 0.2, 0.3, 0.4, 0.5)
+
+dsp1 <- ggplot(ds1, aes(x = Position, y = Frequency, color = Frequency)) +
+  geom_point(size = 0.5) +
+  facet_grid(. ~ Chromosome, scales = "free_x", space = "free_x") +
+  scale_x_continuous(breaks = c(0, 5000000, 10000000, 15000000, 20000000, 25000000),
+                     labels = c("0", "5m", "10m", "15m", "20m", "25m")) +
+  scale_y_continuous(name = "Population frequency", limits = c(min(dm$Frequency), max(dm$Frequency)),
+                     breaks = seq(0, 1, by = 0.1)) +  scale_color_gradient(low = "blue", high = "red") + theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 14)) + labs(title = "P-element insertion frequencies in D. simulans - replicate 1")
+
+dsp2 <- ggplot(ds2, aes(x = Position, y = Frequency, color = Frequency)) +
+  geom_point(size = 0.5) +
+  facet_grid(. ~ Chromosome, scales = "free_x", space = "free_x") +
+  scale_x_continuous(breaks = c(0, 5000000, 10000000, 15000000, 20000000, 25000000),
+                     labels = c("0", "5m", "10m", "15m", "20m", "25m")) +
+  scale_y_continuous(name = "Population frequency", limits = c(min(dm$Frequency), max(dm$Frequency)),
+                     breaks = seq(0, 1, by = 0.1)) +  scale_color_gradient(low = "blue", high = "red") + theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 14)) + labs(title = "P-element insertion frequencies in D. simulans - replicate 2")
+
+dsp3 <- ggplot(ds3, aes(x = Position, y = Frequency, color = Frequency)) +
+  geom_point(size = 0.5) +
+  facet_grid(. ~ Chromosome, scales = "free_x", space = "free_x") +
+  scale_x_continuous(breaks = c(0, 5000000, 10000000, 15000000, 20000000, 25000000),
+                     labels = c("0", "5m", "10m", "15m", "20m", "25m")) +
+  scale_y_continuous(name = "Population frequency", limits = c(min(dm$Frequency), max(dm$Frequency)),
+                     breaks = seq(0, 1, by = 0.1)) +  scale_color_gradient(low = "blue", high = "red") + theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 14)) + labs(title = "P-element insertion frequencies in D. simulans - replicate 3")
+
+dsp3 <- ggplot(ds3, aes(x = Position, y = Frequency, color = Frequency)) +
+  geom_point(size = 0.5) +
+  facet_grid(. ~ Chromosome, scales = "free_x", space = "free_x") +
+  scale_x_continuous(breaks = c(0, 5000000, 10000000, 15000000, 20000000, 25000000),
+                     labels = c("0", "5m", "10m", "15m", "20m", "25m")) +
+  scale_y_continuous(name = "Population frequency", limits = c(min(dm$Frequency), max(dm$Frequency)),
+                     breaks = seq(0, 1, by = 0.1)) +  scale_color_gradient(low = "blue", high = "red") + theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 14)) + labs(title = "P-element insertion frequencies in D. simulans - replicate 3")
+
+dsp3 <- ggplot(ds3, aes(x = Position, y = Frequency, color = Frequency)) +
+  geom_point(size = 0.5) +
+  facet_grid(. ~ Chromosome, scales = "free_x", space = "free_x") +
+  scale_x_continuous(breaks = c(0, 5000000, 10000000, 15000000, 20000000, 25000000),
+                     labels = c("0", "5m", "10m", "15m", "20m", "25m")) +
+  scale_y_continuous(name = "Population frequency", limits = c(min(dm$Frequency), max(dm$Frequency)),
+                     breaks = seq(0, 1, by = 0.1)) +  scale_color_gradient(low = "blue", high = "red") + theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 14)) + labs(title = "P-element insertion frequencies in D. simulans - replicate 3")
+
+dsp4 <- ggplot(ds4, aes(x = Position, y = Frequency, color = Frequency)) +
+  geom_point(size = 0.5) +
+  facet_grid(. ~ Chromosome, scales = "free_x", space = "free_x") +
+  scale_x_continuous(breaks = c(0, 5000000, 10000000, 15000000, 20000000, 25000000),
+                     labels = c("0", "5m", "10m", "15m", "20m", "25m")) +
+  scale_y_continuous(name = "Population frequency", limits = c(min(dm$Frequency), max(dm$Frequency)),
+                     breaks = seq(0, 1, by = 0.1)) +  scale_color_gradient(low = "blue", high = "red") + theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 14)) + labs(title = "P-element insertion frequencies in D. simulans - replicate 4")
+
+dsp5 <- ggplot(ds5, aes(x = Position, y = Frequency, color = Frequency)) +
+  geom_point(size = 0.5) +
+  facet_grid(. ~ Chromosome, scales = "free_x", space = "free_x") +
+  scale_x_continuous(breaks = c(0, 5000000, 10000000, 15000000, 20000000, 25000000),
+                     labels = c("0", "5m", "10m", "15m", "20m", "25m")) +
+  scale_y_continuous(name = "Population frequency", limits = c(min(dm$Frequency), max(dm$Frequency)),
+                     breaks = seq(0, 1, by = 0.1)) +  scale_color_gradient(low = "blue", high = "red") + theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 14)) + labs(title = "P-element insertion frequencies in D. simulans - replicate 5")
+
+dsp6 <- ggplot(ds6, aes(x = Position, y = Frequency, color = Frequency)) +
+  geom_point(size = 0.5) +
+  facet_grid(. ~ Chromosome, scales = "free_x", space = "free_x") +
+  scale_x_continuous(breaks = c(0, 5000000, 10000000, 15000000, 20000000, 25000000),
+                     labels = c("0", "5m", "10m", "15m", "20m", "25m")) +
+  scale_y_continuous(name = "Population frequency", limits = c(min(dm$Frequency), max(dm$Frequency)),
+                     breaks = seq(0, 1, by = 0.1)) +  scale_color_gradient(low = "blue", high = "red") + theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 14)) + labs(title = "P-element insertion frequencies in D. simulans - replicate 6")
+
+dsp7 <- ggplot(ds7, aes(x = Position, y = Frequency, color = Frequency)) +
+  geom_point(size = 0.5) +
+  facet_grid(. ~ Chromosome, scales = "free_x", space = "free_x") +
+  scale_x_continuous(breaks = c(0, 5000000, 10000000, 15000000, 20000000, 25000000),
+                     labels = c("0", "5m", "10m", "15m", "20m", "25m")) +
+  scale_y_continuous(name = "Population frequency", limits = c(min(dm$Frequency), max(dm$Frequency)),
+                     breaks = seq(0, 1, by = 0.1)) +  scale_color_gradient(low = "blue", high = "red") + theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 14)) + labs(title = "P-element insertion frequencies in D. simulans - replicate 7")
+
+dsp8 <- ggplot(ds8, aes(x = Position, y = Frequency, color = Frequency)) +
+  geom_point(size = 0.5) +
+  facet_grid(. ~ Chromosome, scales = "free_x", space = "free_x") +
+  scale_x_continuous(breaks = c(0, 5000000, 10000000, 15000000, 20000000, 25000000),
+                     labels = c("0", "5m", "10m", "15m", "20m", "25m")) +
+  scale_y_continuous(name = "Population frequency", limits = c(min(dm$Frequency), max(dm$Frequency)),
+                     breaks = seq(0, 1, by = 0.1)) +  scale_color_gradient(low = "blue", high = "red") + theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 14)) + labs(title = "P-element insertion frequencies in D. melanogaster - replicate 8")
+
+dsp9 <- ggplot(ds9, aes(x = Position, y = Frequency, color = Frequency)) +
+  geom_point(size = 0.5) +
+  facet_grid(. ~ Chromosome, scales = "free_x", space = "free_x") +
+  scale_x_continuous(breaks = c(0, 5000000, 10000000, 15000000, 20000000, 25000000),
+                     labels = c("0", "5m", "10m", "15m", "20m", "25m")) +
+  scale_y_continuous(name = "Population frequency", limits = c(min(dm$Frequency), max(dm$Frequency)),
+                     breaks = seq(0, 1, by = 0.1)) +  scale_color_gradient(low = "blue", high = "red") + theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 14)) + labs(title = "P-element insertion frequencies in D. simulans - replicate 9")
+
+dsp10 <- ggplot(ds10, aes(x = Position, y = Frequency, color = Frequency)) +
+  geom_point(size = 0.5) +
+  facet_grid(. ~ Chromosome, scales = "free_x", space = "free_x") +
+  scale_x_continuous(breaks = c(0, 5000000, 10000000, 15000000, 20000000, 25000000),
+                     labels = c("0", "5m", "10m", "15m", "20m", "25m")) +
+  scale_y_continuous(name = "Population frequency", limits = c(min(dm$Frequency), max(dm$Frequency)),
+                     breaks = seq(0, 1, by = 0.1)) +  scale_color_gradient(low = "blue", high = "red") + theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 14)) + labs(title = "P-element insertion frequencies in D. simulans - replicate 10")
+
+dsp1
+dsp2
+dsp3
+dsp4
+dsp5
+dsp6
+dsp7
+dsp8
+dsp9
+dsp10
+
+```
+
+``` {R}
+library(ggplot2)
+library(gridExtra)
+theme_set(theme_bw())
+
+# Create a list to store the data frames
+data_list <- list()
+
+# Read data for each replicate and store in the list
+for (i in 1:10) {
+  file_path <- paste0("/Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dsim/replicates/", i, ".teinsertions")
+  data <- read.table(file_path)
+  names(data) <- c("Sample", "Chromosome", "Position", "Strand", "TE", "Order", "FR", "Comment", "Frequency")
+  data <- subset(data, Chromosome %in% c("X", "2L", "2R", "3L", "3R", "4"))
+  data$Chromosome <- factor(data$Chromosome, levels = c("X", "2L", "2R", "3L", "3R", "4"))
+  data_list[[i]] <- data
+}
+
+# Create a list to store the plots
+plot_list <- list()
+
+# Generate plots for each replicate
+for (i in 1:10) {
+  plot_title <- paste("P-element insertion frequencies in D. simulans - replicate", i)
+  p <- ggplot(data_list[[i]], aes(x = Position, y = Frequency, color = Frequency)) +
+    geom_point(size = 0.5) +
+    facet_grid(. ~ Chromosome, scales = "free_x", space = "free_x") +
+    scale_x_continuous(breaks = c(0, 5000000, 10000000, 15000000, 20000000, 25000000),
+                       labels = c("0", "5m", "10m", "15m", "20m", "25m")) +
+    scale_y_continuous(name = "Population frequency",
+                       limits = c(min(unlist(lapply(data_list, function(x) min(x$Frequency)))),
+                                  max(unlist(lapply(data_list, function(x) max(x$Frequency))))),
+                       breaks = seq(0, 1, by = 0.1)) +
+    scale_color_gradient(low = "blue", high = "red") +
+    theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 14)) +
+    labs(title = plot_title)
+
+  plot_list[[i]] <- p
+}
+
+# Combine plots using grid.arrange
+grid_arrange <- do.call(grid.arrange, c(plot_list, ncol = 2))
+
+# Increase the size of the final output
+output_file <- "/Volumes/Data/Projects/invaded_inbred_lines/R/iil_analysis/dna/dsim_popTE2.png"
+ggsave(output_file, plot = grid_arrange, width = 22, height = 12)
+ 
+knitr::include_graphics("/Volumes/Data/Projects/invaded_inbred_lines/R/iil_analysis/dna/dsim_popTE2.png")
+
+```
+
+# Overlapping insertions
+
+We wanted to assess the number and frequency of similar/overlapping insertions across all replicates in each species. This way, if we had insertions of high frequencies overlapping with insertions of lower frequencies in other samples, we could attribute this to cross-contamination. This would also give us an idea as to the degree of cross-contamination, were we to find any. 
+
+To do so, we used th following script to identify insertions on the same chromosome which overlap (+-500 bases).
+
+``` {python, echo=TRUE, python.reticulate=FALSE, eval=FALSE}
+#!/usr/bin/env python
+
+import pandas as pd
+
+df = pd.read_csv('/Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dyak/dyak.teinsertions', delimiter='\t', header=None)
+df.columns = ['sample_id', 'chromosome', 'position', 'strand', 'TE_family', 'TE_order', 'support', 'comment', 'frequency']
+
+# Sort DataFrame
+df.sort_values(['chromosome', 'position'], inplace=True)
+
+window_size = 500
+
+# Create new column for window
+df['window_start'] = df['position'] - window_size
+df['window_end'] = df['position'] + window_size
+
+# Group data by chromosome
+groups = df.groupby('chromosome')
+
+output_lines = [] 
+
+for _, group in groups:
+    overlaps = set()  # Store unique combos
+    for _, row in group.iterrows():
+        overlapping_rows = group[
+            (group['window_end'] >= row['window_start']) & (group['window_start'] <= row['window_end'])
+        ]
+        # Excludecurrent row
+        overlapping_rows = overlapping_rows[overlapping_rows['sample_id'] != row['sample_id']]
+        
+        if len(overlapping_rows) > 0:
+            # Store unique combos of overlapping ins
+            for _, overlap_row in overlapping_rows.iterrows():
+                overlap_info = f"Sample ID: {overlap_row['sample_id']} | Chromosome: {overlap_row['chromosome']} | " \
+                               f"Position: {overlap_row['position']} | Frequency: {overlap_row['frequency']}"
+                overlaps.add(overlap_info)
+    
+    if len(overlaps) > 0:
+        chromosome = group['chromosome'].iloc[0]
+        output_lines.append(f"Chromosome {chromosome}:")
+        output_lines.append("Samples with overlapping insertions:\n")
+        output_lines.extend(sorted(overlaps, key=lambda x: int(x.split("Position:")[1].split(" |")[0].strip())))
+        output_lines.append("\n")
+
+with open('dyak_window_overlap.txt', 'w') as output_file:
+    output_file.write('\n'.join(output_lines))
+
+```
+
+We ran this for each species, and obtained the following results.
+
+```{r, results='asis'}
+output <- readLines("/Volumes/Data/Projects/invaded_inbred_lines/scripts/dmel_window_overlap.txt")
+cat(output, sep = "\n")
+
+```
+
+```{r, results='asis'}
+output <- readLines("/Volumes/Data/Projects/invaded_inbred_lines/scripts/dsim_window_overlap.txt")
+cat(output, sep = "\n")
+
+```
+
+```{r, results='asis'}
+output <- readLines("/Volumes/Data/Projects/invaded_inbred_lines/scripts/dyak_window_overlap.txt")
+cat(output, sep = "\n")
+
+```
+
+# IGV
+
+We wanted to assess whether the results from PopoolationTE2 were expected based on the coverage of input files relative to a reference. To do this, we simply gave a quick visual assessment on IGV.
+
+First, we needed to map the files against the indexed ISO1 reference with bwa, convert them to BAM files and sort them.
+
+``` {bash eval=FALSE}
+#!/bin/bash
+
+ref="/Volumes/Data/Tools/RefGenomes/dmel/dna/dmel-all-chromosome-r6.51.fasta"
+if="/Volumes/Data/Projects/invaded_inbred_lines/dna/demultiplexed/fastq"
+of="/Volumes/Data/Projects/invaded_inbred_lines/dna/demultiplexed/map-bwamem"
+
+bwa mem -t 12 $ref $if/Dmel_1_1.fq.gz $if/Dmel_1_2.fq.gz | samtools sort -m 2G --output-fmt BAM --threads 2 -o $of/dmel_1.sort.bam
+bwa mem -t 12 $ref $if/Dmel_2_1.fq.gz $if/Dmel_2_2.fq.gz | samtools sort -m 2G --output-fmt BAM --threads 2 -o $of/dmel_2.sort.bam
+bwa mem -t 12 $ref $if/Dmel_3_1.fq.gz $if/Dmel_3_2.fq.gz | samtools sort -m 2G --output-fmt BAM --threads 2 -o $of/dmel_3.sort.bam
+bwa mem -t 12 $ref $if/Dmel_4_1.fq.gz $if/Dmel_4_2.fq.gz | samtools sort -m 2G --output-fmt BAM --threads 2 -o $of/dmel_4.sort.bam
+bwa mem -t 12 $ref $if/Dmel_5_1.fq.gz $if/Dmel_5_2.fq.gz | samtools sort -m 2G --output-fmt BAM --threads 2 -o $of/dmel_5.sort.bam
+bwa mem -t 12 $ref $if/Dmel_6_1.fq.gz $if/Dmel_6_2.fq.gz | samtools sort -m 2G --output-fmt BAM --threads 2 -o $of/dmel_6.sort.bam
+bwa mem -t 12 $ref $if/Dmel_7_1.fq.gz $if/Dmel_7_2.fq.gz | samtools sort -m 2G --output-fmt BAM --threads 2 -o $of/dmel_7.sort.bam
+bwa mem -t 12 $ref $if/Dmel_8_1.fq.gz $if/Dmel_8_2.fq.gz | samtools sort -m 2G --output-fmt BAM --threads 2 -o $of/dmel_8.sort.bam
+bwa mem -t 12 $ref $if/Dmel_9_1.fq.gz $if/Dmel_9_2.fq.gz | samtools sort -m 2G --output-fmt BAM --threads 2 -o $of/dmel_9.sort.bam
+bwa mem -t 2 $ref $if/Dmel_10_1.fq.gz $if/Dmel_10_2.fq.gz | samtools sort -m 2G --output-fmt BAM --threads 2 -o $of/dmel_10.sort.bam
+bwa mem -t 2 $ref $if/Dmel_N1_1.fq.gz $if/Dmel_N1_2.fq.gz | samtools sort -m 2G --output-fmt BAM --threads 2 -o $of/dmel_N1.sort.bam
+
+```
+
+We then open the BAM files in IGV and compare to the reference.
+
+(.png of coverage)
