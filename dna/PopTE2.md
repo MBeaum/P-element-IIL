@@ -1,7 +1,7 @@
 PopTE2
 ================
 Matthew Beaumont
-2023-06-15
+2023-06-26
 
 # PopoolationTE2
 
@@ -181,22 +181,28 @@ dyp <- ggplot(dy, aes(x = Position, y = Frequency, color = Sample)) +
           plot.title = element_text(hjust = 0.5, size = 14)) +
   labs(title = "P-element insertion frequencies in D. yakuba populations")
 
-plot(dmp)
+ggsave("dna/figs/dmel_popTE2_all.png", dmp, width = 16, height = 8, dpi = 300)
+ggsave("dna/figs/dsim_popTE2_all.png", dsp, width = 16, height = 8, dpi = 300)
+ggsave("dna/figs/dyak_popTE2_all.png", dyp, width = 16, height = 8, dpi = 300)
+
+knitr::include_graphics("dna/figs/dmel_popTE2_all.png")
 ```
 
-![](PopTE2_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+<img src="dna/figs/dmel_popTE2_all.png" width="4800" />
 
 ``` r
-plot(dsp)
+knitr::include_graphics("dna/figs/dsim_popTE2_all.png")
 ```
 
-![](PopTE2_files/figure-gfm/unnamed-chunk-6-2.png)<!-- -->
+<img src="dna/figs/dsim_popTE2_all.png" width="4800" />
 
 ``` r
-plot(dyp)
+knitr::include_graphics("dna/figs/dyak_popTE2_all.png")
 ```
 
-![](PopTE2_files/figure-gfm/unnamed-chunk-6-3.png)<!-- -->
+<img src="dna/figs/dyak_popTE2_all.png" width="4800" />
+
+## Dmel
 
 Then we looked at each sample individually, starting with D. mel.
 
@@ -242,12 +248,14 @@ grid <- do.call(grid.arrange, c(plots, ncol = 2))
 ![](PopTE2_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 ``` r
-ggsave("/Volumes/Data/Projects/invaded_inbred_lines/R/iil_analysis/dna/dmel_popTE2.png", grid, width = 24, height = 14, dpi = 300)
+ggsave("dna/figs/dmel_popTE2.png", grid, width = 24, height = 14, dpi = 300)
 
-knitr::include_graphics("/Volumes/Data/Projects/invaded_inbred_lines/R/iil_analysis/dna/dmel_popTE2.png")
+knitr::include_graphics("dna/figs/dmel_popTE2.png")
 ```
 
-<img src="dmel_popTE2.png" width="7200" />
+<img src="dna/figs/dmel_popTE2.png" width="7200" />
+
+## Dsim
 
 Then for D. sim.
 
@@ -293,12 +301,16 @@ grid <- do.call(grid.arrange, c(plots, ncol = 2))
 ![](PopTE2_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
 ``` r
-ggsave("/Volumes/Data/Projects/invaded_inbred_lines/R/iil_analysis/dna/dsim_popTE2.png", grid, width = 24, height = 14, dpi = 300)
+ggsave("dna/figs/dsim_popTE2.png", grid, width = 24, height = 14, dpi = 300)
 
-knitr::include_graphics("/Volumes/Data/Projects/invaded_inbred_lines/R/iil_analysis/dna/dsim_popTE2.png")
+knitr::include_graphics("dna/figs/dsim_popTE2.png")
 ```
 
-<img src="dsim_popTE2.png" width="7200" />
+<img src="dna/figs/dsim_popTE2.png" width="7200" />
+
+## Dyak
+
+And finally D. yak.
 
 ``` r
 library(ggplot2)
@@ -353,12 +365,12 @@ grid <- do.call(grid.arrange, c(plots, ncol = 2))
 ![](PopTE2_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
 ``` r
-ggsave("/Volumes/Data/Projects/invaded_inbred_lines/R/iil_analysis/dna/dyak_popTE2.png", grid, width = 24, height = 14, dpi = 300)
+ggsave("dna/figs/dyak_popTE2.png", grid, width = 24, height = 14, dpi = 300)
 
-knitr::include_graphics("/Volumes/Data/Projects/invaded_inbred_lines/R/iil_analysis/dna/dyak_popTE2.png")
+knitr::include_graphics("dna/figs/dyak_popTE2.png")
 ```
 
-<img src="dyak_popTE2.png" width="7200" />
+<img src="dna/figs/dyak_popTE2.png" width="7200" />
 
 # Overlapping insertions
 
@@ -369,8 +381,201 @@ frequencies in other samples, we could attribute this to
 cross-contamination. This would also give us an idea as to the degree of
 cross-contamination, were we to find any.
 
-To do so, we used th following script to identify insertions on the same
-chromosome which overlap (+-500 bases).
+Here, we visualised all the insertions in all replicates of each
+species, using a stacked bar approcah to identify overlapping
+insertions, within a 1000bp window.
+
+## Dmel
+
+``` r
+dma <- read.delim("/Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dmel/dmel.teinsertions", header = FALSE, sep = "\t", col.names = c("Sample_ID", "Chromosome", "Position", "Empty", "TE", "Order", "Strand", "Comment", "Frequency"))
+
+desired_chromosomes <- c("X", "2L", "2R", "3L", "3R", "4")
+dma <- subset(dma, Chromosome %in% desired_chromosomes)
+
+dma$Sample_ID <- as.factor(dma$Sample_ID)
+
+library(dplyr)
+```
+
+    ## 
+    ## Attaching package: 'dplyr'
+
+    ## The following object is masked from 'package:gridExtra':
+    ## 
+    ##     combine
+
+    ## The following objects are masked from 'package:stats':
+    ## 
+    ##     filter, lag
+
+    ## The following objects are masked from 'package:base':
+    ## 
+    ##     intersect, setdiff, setequal, union
+
+``` r
+dma <- dma %>%
+  mutate(Position = as.numeric(Position)) %>%
+  group_by(Chromosome, Sample_ID, Window = floor(Position/1000)) %>%
+  summarise(Cumulative_Frequency_dma = sum(Frequency)) %>%
+  ungroup()
+```
+
+    ## `summarise()` has grouped output by 'Chromosome', 'Sample_ID'. You can override
+    ## using the `.groups` argument.
+
+``` r
+library(tidyr)
+data_stacked_dma <- dma %>%
+  pivot_wider(names_from = Sample_ID, values_from = Cumulative_Frequency_dma, values_fill = 0) %>%
+  gather(Sample_ID, Cumulative_Frequency_dma, -Chromosome, -Window) %>%
+  arrange(Chromosome, Window)
+
+library(ggplot2)
+
+plot_dmelall <- ggplot(data_stacked_dma, aes(x = Window, y = Cumulative_Frequency_dma, fill = Sample_ID)) +
+  geom_bar(stat = "identity", position = "stack", color = "black", width = 150) +
+  labs(x = "Window", y = "Cumulative Frequency", fill = "Sample ID") +
+  theme_minimal() +
+  facet_wrap(~ Chromosome, scales = "free_x", ncol = 1) +
+  theme(plot.background = element_rect(fill = "white"),
+        strip.placement = "outside",
+        strip.background = element_blank(),
+        strip.text = element_text(hjust = 0.5, margin = margin(b = 10)))
+
+output_dmelall <- "dna/figs/dmel_overlap_all.png"
+ggsave(output_dmelall, plot = plot_dmelall, width = 8, height = 14)
+```
+
+    ## Warning: `position_stack()` requires non-overlapping x intervals
+    ## `position_stack()` requires non-overlapping x intervals
+    ## `position_stack()` requires non-overlapping x intervals
+    ## `position_stack()` requires non-overlapping x intervals
+    ## `position_stack()` requires non-overlapping x intervals
+    ## `position_stack()` requires non-overlapping x intervals
+
+``` r
+knitr::include_graphics(output_dmelall)
+```
+
+<img src="dna/figs/dmel_overlap_all.png" width="2400" />
+
+## Dsim
+
+``` r
+dsa <- read.delim("/Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dsim/dsim.teinsertions", header = FALSE, sep = "\t", col.names = c("Sample_ID", "Chromosome", "Position", "Empty", "TE", "Order", "Strand", "Comment", "Frequency"))
+
+desired_chromosomes <- c("X", "2L", "2R", "3L", "3R")
+dsa <- subset(dsa, Chromosome %in% desired_chromosomes)
+
+dsa$Sample_ID <- as.factor(dsa$Sample_ID)
+
+library(dplyr)
+dsa <- dsa %>%
+  group_by(Chromosome, Sample_ID, Window = floor(Position/1000)) %>%
+  summarise(Cumulative_Frequency_dsa = sum(Frequency)) %>%
+  ungroup()
+```
+
+    ## `summarise()` has grouped output by 'Chromosome', 'Sample_ID'. You can override
+    ## using the `.groups` argument.
+
+``` r
+library(tidyr)
+data_stacked_dsa <- dsa %>%
+  pivot_wider(names_from = Sample_ID, values_from = Cumulative_Frequency_dsa, values_fill = 0) %>%
+  gather(Sample_ID, Cumulative_Frequency_dsa, -Chromosome, -Window) %>%
+  arrange(Chromosome, Window)
+
+library(ggplot2)
+
+plot_dsimall <- ggplot(data_stacked_dsa, aes(x = Window, y = Cumulative_Frequency_dsa, fill = Sample_ID)) +
+  geom_bar(stat = "identity", position = "stack", color = "black", width = 150) +
+  labs(x = "Window", y = "Cumulative Frequency", fill = "Sample ID") +
+  theme_minimal() +
+  facet_wrap(~ Chromosome, scales = "free_x", ncol = 1) +
+  theme(plot.background = element_rect(fill = "white"),
+        strip.placement = "outside",
+        strip.background = element_blank(),
+        strip.text = element_text(hjust = 0.5, margin = margin(b = 10)))
+
+output_dsimall <- "dna/figs/dsim_overlap_all.png"
+ggsave(output_dsimall, plot = plot_dsimall, width = 8, height = 14)
+```
+
+    ## Warning: `position_stack()` requires non-overlapping x intervals
+    ## `position_stack()` requires non-overlapping x intervals
+    ## `position_stack()` requires non-overlapping x intervals
+    ## `position_stack()` requires non-overlapping x intervals
+    ## `position_stack()` requires non-overlapping x intervals
+
+``` r
+knitr::include_graphics(output_dsimall)
+```
+
+<img src="dna/figs/dsim_overlap_all.png" width="2400" />
+
+## Dyak
+
+``` r
+dya <- read.delim("/Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dyak/dyak.teinsertions", header = FALSE, sep = "\t", col.names = c("Sample_ID", "Chromosome", "Position", "Empty", "TE", "Order", "Strand", "Comment", "Frequency"))
+
+desired_chromosomes <- c("X", "2L", "2R", "3L", "3R")
+dya <- subset(dya, Chromosome %in% desired_chromosomes)
+
+dya$Sample_ID <- as.factor(dya$Sample_ID)
+
+library(dplyr)
+dya <- dya %>%
+  group_by(Chromosome, Sample_ID, Window = floor(Position/1000)) %>%
+  summarise(Cumulative_Frequency_dya = sum(Frequency)) %>%
+  ungroup()
+```
+
+    ## `summarise()` has grouped output by 'Chromosome', 'Sample_ID'. You can override
+    ## using the `.groups` argument.
+
+``` r
+library(tidyr)
+data_stacked_dya <- dya %>%
+  pivot_wider(names_from = Sample_ID, values_from = Cumulative_Frequency_dya, values_fill = 0) %>%
+  gather(Sample_ID, Cumulative_Frequency_dya, -Chromosome, -Window) %>%
+  arrange(Chromosome, Window)
+
+library(ggplot2)
+
+plot_dyakall <- ggplot(data_stacked_dya, aes(x = Window, y = Cumulative_Frequency_dya, fill = Sample_ID)) +
+  geom_bar(stat = "identity", position = "stack", color = "black", width = 150) +
+  labs(x = "Window", y = "Cumulative Frequency", fill = "Sample ID") +
+  theme_minimal() +
+  facet_wrap(~ Chromosome, scales = "free_x", ncol = 1) +
+  theme(plot.background = element_rect(fill = "white"),
+        strip.placement = "outside",
+        strip.background = element_blank(),
+        strip.text = element_text(hjust = 0.5, margin = margin(b = 10)))
+
+output_dyakall <- "dna/figs/dyak_overlap_all.png"
+ggsave(output_dyakall, plot = plot_dyakall, width = 8, height = 14)
+```
+
+    ## Warning: `position_stack()` requires non-overlapping x intervals
+    ## `position_stack()` requires non-overlapping x intervals
+    ## `position_stack()` requires non-overlapping x intervals
+    ## `position_stack()` requires non-overlapping x intervals
+    ## `position_stack()` requires non-overlapping x intervals
+
+``` r
+knitr::include_graphics(output_dyakall)
+```
+
+<img src="dna/figs/dyak_overlap_all.png" width="2400" />
+
+However, this approach was too noisy to visually assess poignant
+overlapping insertions, so we tried to pre-filter down the input file to
+only contain insertions which were overlapping.
+
+To do so, we used the following script to identify insertions on the
+same chromosome which overlap (+-500 bases).
 
 ``` python
 #!/usr/bin/env python
@@ -422,9 +627,10 @@ with open('dyak_window_overlap.txt', 'w') as output_file:
 ```
 
 We took this output and visualised it on a stacked bar graph, where each
-chromosome another divided into 1000bp windows and overlapping
-insertions within these windows are stacked on-top one another, showing
-the cumulative frequency of the insertion across all replicates.
+chromosome another divided into 1000bp windows, showing the cumulative
+frequency of the insertion across all replicates.
+
+### Dmel filtered
 
 ``` r
 data <- read.delim("/Volumes/Data/Projects/invaded_inbred_lines/scripts/dmel_window_overlap.txt", header = FALSE, sep = "\t", col.names = c("Sample_ID", "Chromosome", "Position", "Frequency"))
@@ -435,24 +641,6 @@ data <- subset(data, Chromosome %in% desired_chromosomes)
 data$Sample_ID <- as.factor(data$Sample_ID)
 
 library(dplyr)
-```
-
-    ## 
-    ## Attaching package: 'dplyr'
-
-    ## The following object is masked from 'package:gridExtra':
-    ## 
-    ##     combine
-
-    ## The following objects are masked from 'package:stats':
-    ## 
-    ##     filter, lag
-
-    ## The following objects are masked from 'package:base':
-    ## 
-    ##     intersect, setdiff, setequal, union
-
-``` r
 data <- data %>%
   group_by(Chromosome, Sample_ID, Window = floor(Position/1000)) %>%
   summarise(Cumulative_Frequency_dm = sum(Frequency)) %>%
@@ -481,7 +669,7 @@ plot_dmel <- ggplot(data_stacked, aes(x = Window, y = Cumulative_Frequency_dm, f
         strip.background = element_blank(),
         strip.text = element_text(hjust = 0.5, margin = margin(b = 10)))
 
-output_dmel <- "/Volumes/Data/Projects/invaded_inbred_lines/R/iil_analysis/dna/dmel_overlap.png"
+output_dmel <- "dna/figs/dmel_overlap.png"
 ggsave(output_dmel, plot = plot_dmel, width = 8, height = 14)
 ```
 
@@ -495,7 +683,9 @@ ggsave(output_dmel, plot = plot_dmel, width = 8, height = 14)
 knitr::include_graphics(output_dmel)
 ```
 
-<img src="dmel_overlap.png" width="2400" />
+<img src="dna/figs/dmel_overlap.png" width="2400" />
+
+### Dsim filtered
 
 ``` r
 data <- read.delim("/Volumes/Data/Projects/invaded_inbred_lines/scripts/dsim_window_overlap.txt", header = FALSE, sep = "\t", col.names = c("Sample_ID", "Chromosome", "Position", "Frequency"))
@@ -534,7 +724,7 @@ plot_dsim <- ggplot(data_stacked_ds, aes(x = Window, y = Cumulative_Frequency_ds
         strip.background = element_blank(),
         strip.text = element_text(hjust = 0.5, margin = margin(b = 10)))
 
-output_dsim <- "/Volumes/Data/Projects/invaded_inbred_lines/R/iil_analysis/dna/dsim_overlap.png"
+output_dsim <- "dna/figs/dsim_overlap.png"
 ggsave(output_dsim, plot = plot_dsim, width = 8, height = 14)
 ```
 
@@ -546,7 +736,9 @@ ggsave(output_dsim, plot = plot_dsim, width = 8, height = 14)
 knitr::include_graphics(output_dsim)
 ```
 
-<img src="dsim_overlap.png" width="2400" />
+<img src="dna/figs/dsim_overlap.png" width="2400" />
+
+### Dyak filtered
 
 ``` r
 data <- read.delim("/Volumes/Data/Projects/invaded_inbred_lines/scripts/dyak_window_overlap.txt", header = FALSE, sep = "\t", col.names = c("Sample_ID", "Chromosome", "Position", "Frequency"))
@@ -585,28 +777,35 @@ plot_dyak <- ggplot(data_stacked, aes(x = Window, y = Cumulative_Frequency_dy, f
         strip.background = element_blank(),
         strip.text = element_text(hjust = 0.5, margin = margin(b = 10)))
 
-output_dyak <- "/Volumes/Data/Projects/invaded_inbred_lines/R/iil_analysis/dna/dyak_overlap.png"
+output_dyak <- "dna/figs/dyak_overlap.png"
 ggsave(output_dyak, plot = plot_dyak, width = 8, height = 14)
 
 knitr::include_graphics(output_dyak)
 ```
 
-<img src="dyak_overlap.png" width="2400" /> Then we tried it again
-without filtering using the aforementioned python script.
+<img src="dna/figs/dyak_overlap.png" width="2400" />
+
+As many of the replicates share the same genetic background from the
+original P-element invasion, overlapping insertions of similar frequency
+is somewhat expected. However, these insertions are not what we are
+trying to identify. To alleviate this, we filtered the input file
+further, looking for only insertions which have a frequency of \>0.7 in
+at least one replicate and \<0.3 in another.
+
+# Extra
 
 ``` r
-dma <- read.delim("/Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dmel/dmel.teinsertions", header = FALSE, sep = "\t", col.names = c("Sample_ID", "Chromosome", "Position", "Empty", "TE", "Order", "Strand", "Comment", "Frequency"))
+data <- read.delim("/Volumes/Data/Projects/invaded_inbred_lines/scripts/dyak_window_overlap.txt", header = FALSE, sep = "\t", col.names = c("Sample_ID", "Chromosome", "Position", "Frequency"))
 
 desired_chromosomes <- c("X", "2L", "2R", "3L", "3R")
-dma <- subset(dma, Chromosome %in% desired_chromosomes)
+data <- subset(data, Chromosome %in% desired_chromosomes)
 
-dma$Sample_ID <- as.factor(dma$Sample_ID)
+data$Sample_ID <- as.factor(data$Sample_ID)
 
 library(dplyr)
-dma <- dma %>%
-  mutate(Position = as.numeric(Position)) %>%
+data <- data %>%
   group_by(Chromosome, Sample_ID, Window = floor(Position/1000)) %>%
-  summarise(Cumulative_Frequency_dma = sum(Frequency)) %>%
+  summarise(Cumulative_Frequency_dy = sum(Frequency)) %>%
   ungroup()
 ```
 
@@ -615,144 +814,448 @@ dma <- dma %>%
 
 ``` r
 library(tidyr)
-data_stacked_dma <- dma %>%
-  pivot_wider(names_from = Sample_ID, values_from = Cumulative_Frequency_dma, values_fill = 0) %>%
-  gather(Sample_ID, Cumulative_Frequency_dma, -Chromosome, -Window) %>%
+data_stacked_dya <- data %>%
+  pivot_wider(names_from = Sample_ID, values_from = Cumulative_Frequency_dy, values_fill = 0) %>%
+  gather(Sample_ID, Cumulative_Frequency_dy, -Chromosome, -Window) %>%
   arrange(Chromosome, Window)
 
 library(ggplot2)
 
-plot_dmelall <- ggplot(data_stacked_dma, aes(x = Window, y = Cumulative_Frequency_dma, fill = Sample_ID)) +
-  geom_bar(stat = "identity", position = "stack", color = "black", width = 150) +
+dx  <- data_stacked_dya %>%
+  filter(Chromosome == "X")
+d2l  <- data_stacked_dya %>%
+  filter(Chromosome == "2L")
+d2r  <- data_stacked_dya %>%
+  filter(Chromosome == "2R")
+d3l  <- data_stacked_dya %>%
+  filter(Chromosome == "3L")
+d3r  <- data_stacked_dya %>%
+  filter(Chromosome == "3R")
+d4  <- data_stacked_dya %>%
+  filter(Chromosome == "4")
+
+plot_dyak_x <- ggplot(dx, aes(x = Window, y = Cumulative_Frequency_dy, fill = Sample_ID)) +
+  geom_bar(stat = "identity", position = "stack", color = "black", width = 90) +
   labs(x = "Window", y = "Cumulative Frequency", fill = "Sample ID") +
   theme_minimal() +
-  facet_wrap(~ Chromosome, scales = "free_x", ncol = 1) +
   theme(plot.background = element_rect(fill = "white"),
         strip.placement = "outside",
         strip.background = element_blank(),
         strip.text = element_text(hjust = 0.5, margin = margin(b = 10)))
 
-output_dmelall <- "/Volumes/Data/Projects/invaded_inbred_lines/R/iil_analysis/dna/dmel_overlap_all.png"
-ggsave(output_dmelall, plot = plot_dmelall, width = 8, height = 14)
-```
-
-    ## Warning: `position_stack()` requires non-overlapping x intervals
-    ## `position_stack()` requires non-overlapping x intervals
-    ## `position_stack()` requires non-overlapping x intervals
-    ## `position_stack()` requires non-overlapping x intervals
-    ## `position_stack()` requires non-overlapping x intervals
-
-``` r
-knitr::include_graphics(output_dmelall)
-```
-
-<img src="dmel_overlap_all.png" width="2400" />
-
-``` r
-dsa <- read.delim("/Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dsim/dsim.teinsertions", header = FALSE, sep = "\t", col.names = c("Sample_ID", "Chromosome", "Position", "Empty", "TE", "Order", "Strand", "Comment", "Frequency"))
-
-desired_chromosomes <- c("X", "2L", "2R", "3L", "3R")
-dsa <- subset(dsa, Chromosome %in% desired_chromosomes)
-
-dsa$Sample_ID <- as.factor(dsa$Sample_ID)
-
-library(dplyr)
-dsa <- dsa %>%
-  group_by(Chromosome, Sample_ID, Window = floor(Position/1000)) %>%
-  summarise(Cumulative_Frequency_dsa = sum(Frequency)) %>%
-  ungroup()
-```
-
-    ## `summarise()` has grouped output by 'Chromosome', 'Sample_ID'. You can override
-    ## using the `.groups` argument.
-
-``` r
-library(tidyr)
-data_stacked_dsa <- dsa %>%
-  pivot_wider(names_from = Sample_ID, values_from = Cumulative_Frequency_dsa, values_fill = 0) %>%
-  gather(Sample_ID, Cumulative_Frequency_dsa, -Chromosome, -Window) %>%
-  arrange(Chromosome, Window)
-
-library(ggplot2)
-
-plot_dsimall <- ggplot(data_stacked_dsa, aes(x = Window, y = Cumulative_Frequency_dsa, fill = Sample_ID)) +
-  geom_bar(stat = "identity", position = "stack", color = "black", width = 150) +
+plot_dyak_2l <- ggplot(d2l, aes(x = Window, y = Cumulative_Frequency_dy, fill = Sample_ID)) +
+  geom_bar(stat = "identity", position = "stack", color = "black", width = 90) +
   labs(x = "Window", y = "Cumulative Frequency", fill = "Sample ID") +
+  xlim(0,20000)
   theme_minimal() +
-  facet_wrap(~ Chromosome, scales = "free_x", ncol = 1) +
   theme(plot.background = element_rect(fill = "white"),
         strip.placement = "outside",
         strip.background = element_blank(),
         strip.text = element_text(hjust = 0.5, margin = margin(b = 10)))
-
-output_dsimall <- "/Volumes/Data/Projects/invaded_inbred_lines/R/iil_analysis/dna/dsim_overlap_all.png"
-ggsave(output_dsimall, plot = plot_dsimall, width = 8, height = 14)
 ```
 
-    ## Warning: `position_stack()` requires non-overlapping x intervals
-    ## `position_stack()` requires non-overlapping x intervals
-    ## `position_stack()` requires non-overlapping x intervals
-    ## `position_stack()` requires non-overlapping x intervals
-    ## `position_stack()` requires non-overlapping x intervals
+    ## List of 97
+    ##  $ line                      :List of 6
+    ##   ..$ colour       : chr "black"
+    ##   ..$ linewidth    : num 0.5
+    ##   ..$ linetype     : num 1
+    ##   ..$ lineend      : chr "butt"
+    ##   ..$ arrow        : logi FALSE
+    ##   ..$ inherit.blank: logi TRUE
+    ##   ..- attr(*, "class")= chr [1:2] "element_line" "element"
+    ##  $ rect                      :List of 5
+    ##   ..$ fill         : chr "white"
+    ##   ..$ colour       : chr "black"
+    ##   ..$ linewidth    : num 0.5
+    ##   ..$ linetype     : num 1
+    ##   ..$ inherit.blank: logi TRUE
+    ##   ..- attr(*, "class")= chr [1:2] "element_rect" "element"
+    ##  $ text                      :List of 11
+    ##   ..$ family       : chr ""
+    ##   ..$ face         : chr "plain"
+    ##   ..$ colour       : chr "black"
+    ##   ..$ size         : num 11
+    ##   ..$ hjust        : num 0.5
+    ##   ..$ vjust        : num 0.5
+    ##   ..$ angle        : num 0
+    ##   ..$ lineheight   : num 0.9
+    ##   ..$ margin       : 'margin' num [1:4] 0points 0points 0points 0points
+    ##   .. ..- attr(*, "unit")= int 8
+    ##   ..$ debug        : logi FALSE
+    ##   ..$ inherit.blank: logi TRUE
+    ##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
+    ##  $ title                     : NULL
+    ##  $ aspect.ratio              : NULL
+    ##  $ axis.title                : NULL
+    ##  $ axis.title.x              :List of 11
+    ##   ..$ family       : NULL
+    ##   ..$ face         : NULL
+    ##   ..$ colour       : NULL
+    ##   ..$ size         : NULL
+    ##   ..$ hjust        : NULL
+    ##   ..$ vjust        : num 1
+    ##   ..$ angle        : NULL
+    ##   ..$ lineheight   : NULL
+    ##   ..$ margin       : 'margin' num [1:4] 2.75points 0points 0points 0points
+    ##   .. ..- attr(*, "unit")= int 8
+    ##   ..$ debug        : NULL
+    ##   ..$ inherit.blank: logi TRUE
+    ##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
+    ##  $ axis.title.x.top          :List of 11
+    ##   ..$ family       : NULL
+    ##   ..$ face         : NULL
+    ##   ..$ colour       : NULL
+    ##   ..$ size         : NULL
+    ##   ..$ hjust        : NULL
+    ##   ..$ vjust        : num 0
+    ##   ..$ angle        : NULL
+    ##   ..$ lineheight   : NULL
+    ##   ..$ margin       : 'margin' num [1:4] 0points 0points 2.75points 0points
+    ##   .. ..- attr(*, "unit")= int 8
+    ##   ..$ debug        : NULL
+    ##   ..$ inherit.blank: logi TRUE
+    ##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
+    ##  $ axis.title.x.bottom       : NULL
+    ##  $ axis.title.y              :List of 11
+    ##   ..$ family       : NULL
+    ##   ..$ face         : NULL
+    ##   ..$ colour       : NULL
+    ##   ..$ size         : NULL
+    ##   ..$ hjust        : NULL
+    ##   ..$ vjust        : num 1
+    ##   ..$ angle        : num 90
+    ##   ..$ lineheight   : NULL
+    ##   ..$ margin       : 'margin' num [1:4] 0points 2.75points 0points 0points
+    ##   .. ..- attr(*, "unit")= int 8
+    ##   ..$ debug        : NULL
+    ##   ..$ inherit.blank: logi TRUE
+    ##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
+    ##  $ axis.title.y.left         : NULL
+    ##  $ axis.title.y.right        :List of 11
+    ##   ..$ family       : NULL
+    ##   ..$ face         : NULL
+    ##   ..$ colour       : NULL
+    ##   ..$ size         : NULL
+    ##   ..$ hjust        : NULL
+    ##   ..$ vjust        : num 0
+    ##   ..$ angle        : num -90
+    ##   ..$ lineheight   : NULL
+    ##   ..$ margin       : 'margin' num [1:4] 0points 0points 0points 2.75points
+    ##   .. ..- attr(*, "unit")= int 8
+    ##   ..$ debug        : NULL
+    ##   ..$ inherit.blank: logi TRUE
+    ##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
+    ##  $ axis.text                 :List of 11
+    ##   ..$ family       : NULL
+    ##   ..$ face         : NULL
+    ##   ..$ colour       : chr "grey30"
+    ##   ..$ size         : 'rel' num 0.8
+    ##   ..$ hjust        : NULL
+    ##   ..$ vjust        : NULL
+    ##   ..$ angle        : NULL
+    ##   ..$ lineheight   : NULL
+    ##   ..$ margin       : NULL
+    ##   ..$ debug        : NULL
+    ##   ..$ inherit.blank: logi TRUE
+    ##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
+    ##  $ axis.text.x               :List of 11
+    ##   ..$ family       : NULL
+    ##   ..$ face         : NULL
+    ##   ..$ colour       : NULL
+    ##   ..$ size         : NULL
+    ##   ..$ hjust        : NULL
+    ##   ..$ vjust        : num 1
+    ##   ..$ angle        : NULL
+    ##   ..$ lineheight   : NULL
+    ##   ..$ margin       : 'margin' num [1:4] 2.2points 0points 0points 0points
+    ##   .. ..- attr(*, "unit")= int 8
+    ##   ..$ debug        : NULL
+    ##   ..$ inherit.blank: logi TRUE
+    ##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
+    ##  $ axis.text.x.top           :List of 11
+    ##   ..$ family       : NULL
+    ##   ..$ face         : NULL
+    ##   ..$ colour       : NULL
+    ##   ..$ size         : NULL
+    ##   ..$ hjust        : NULL
+    ##   ..$ vjust        : num 0
+    ##   ..$ angle        : NULL
+    ##   ..$ lineheight   : NULL
+    ##   ..$ margin       : 'margin' num [1:4] 0points 0points 2.2points 0points
+    ##   .. ..- attr(*, "unit")= int 8
+    ##   ..$ debug        : NULL
+    ##   ..$ inherit.blank: logi TRUE
+    ##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
+    ##  $ axis.text.x.bottom        : NULL
+    ##  $ axis.text.y               :List of 11
+    ##   ..$ family       : NULL
+    ##   ..$ face         : NULL
+    ##   ..$ colour       : NULL
+    ##   ..$ size         : NULL
+    ##   ..$ hjust        : num 1
+    ##   ..$ vjust        : NULL
+    ##   ..$ angle        : NULL
+    ##   ..$ lineheight   : NULL
+    ##   ..$ margin       : 'margin' num [1:4] 0points 2.2points 0points 0points
+    ##   .. ..- attr(*, "unit")= int 8
+    ##   ..$ debug        : NULL
+    ##   ..$ inherit.blank: logi TRUE
+    ##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
+    ##  $ axis.text.y.left          : NULL
+    ##  $ axis.text.y.right         :List of 11
+    ##   ..$ family       : NULL
+    ##   ..$ face         : NULL
+    ##   ..$ colour       : NULL
+    ##   ..$ size         : NULL
+    ##   ..$ hjust        : num 0
+    ##   ..$ vjust        : NULL
+    ##   ..$ angle        : NULL
+    ##   ..$ lineheight   : NULL
+    ##   ..$ margin       : 'margin' num [1:4] 0points 0points 0points 2.2points
+    ##   .. ..- attr(*, "unit")= int 8
+    ##   ..$ debug        : NULL
+    ##   ..$ inherit.blank: logi TRUE
+    ##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
+    ##  $ axis.ticks                : list()
+    ##   ..- attr(*, "class")= chr [1:2] "element_blank" "element"
+    ##  $ axis.ticks.x              : NULL
+    ##  $ axis.ticks.x.top          : NULL
+    ##  $ axis.ticks.x.bottom       : NULL
+    ##  $ axis.ticks.y              : NULL
+    ##  $ axis.ticks.y.left         : NULL
+    ##  $ axis.ticks.y.right        : NULL
+    ##  $ axis.ticks.length         : 'simpleUnit' num 2.75points
+    ##   ..- attr(*, "unit")= int 8
+    ##  $ axis.ticks.length.x       : NULL
+    ##  $ axis.ticks.length.x.top   : NULL
+    ##  $ axis.ticks.length.x.bottom: NULL
+    ##  $ axis.ticks.length.y       : NULL
+    ##  $ axis.ticks.length.y.left  : NULL
+    ##  $ axis.ticks.length.y.right : NULL
+    ##  $ axis.line                 : list()
+    ##   ..- attr(*, "class")= chr [1:2] "element_blank" "element"
+    ##  $ axis.line.x               : NULL
+    ##  $ axis.line.x.top           : NULL
+    ##  $ axis.line.x.bottom        : NULL
+    ##  $ axis.line.y               : NULL
+    ##  $ axis.line.y.left          : NULL
+    ##  $ axis.line.y.right         : NULL
+    ##  $ legend.background         : list()
+    ##   ..- attr(*, "class")= chr [1:2] "element_blank" "element"
+    ##  $ legend.margin             : 'margin' num [1:4] 5.5points 5.5points 5.5points 5.5points
+    ##   ..- attr(*, "unit")= int 8
+    ##  $ legend.spacing            : 'simpleUnit' num 11points
+    ##   ..- attr(*, "unit")= int 8
+    ##  $ legend.spacing.x          : NULL
+    ##  $ legend.spacing.y          : NULL
+    ##  $ legend.key                : list()
+    ##   ..- attr(*, "class")= chr [1:2] "element_blank" "element"
+    ##  $ legend.key.size           : 'simpleUnit' num 1.2lines
+    ##   ..- attr(*, "unit")= int 3
+    ##  $ legend.key.height         : NULL
+    ##  $ legend.key.width          : NULL
+    ##  $ legend.text               :List of 11
+    ##   ..$ family       : NULL
+    ##   ..$ face         : NULL
+    ##   ..$ colour       : NULL
+    ##   ..$ size         : 'rel' num 0.8
+    ##   ..$ hjust        : NULL
+    ##   ..$ vjust        : NULL
+    ##   ..$ angle        : NULL
+    ##   ..$ lineheight   : NULL
+    ##   ..$ margin       : NULL
+    ##   ..$ debug        : NULL
+    ##   ..$ inherit.blank: logi TRUE
+    ##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
+    ##  $ legend.text.align         : NULL
+    ##  $ legend.title              :List of 11
+    ##   ..$ family       : NULL
+    ##   ..$ face         : NULL
+    ##   ..$ colour       : NULL
+    ##   ..$ size         : NULL
+    ##   ..$ hjust        : num 0
+    ##   ..$ vjust        : NULL
+    ##   ..$ angle        : NULL
+    ##   ..$ lineheight   : NULL
+    ##   ..$ margin       : NULL
+    ##   ..$ debug        : NULL
+    ##   ..$ inherit.blank: logi TRUE
+    ##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
+    ##  $ legend.title.align        : NULL
+    ##  $ legend.position           : chr "right"
+    ##  $ legend.direction          : NULL
+    ##  $ legend.justification      : chr "center"
+    ##  $ legend.box                : NULL
+    ##  $ legend.box.just           : NULL
+    ##  $ legend.box.margin         : 'margin' num [1:4] 0cm 0cm 0cm 0cm
+    ##   ..- attr(*, "unit")= int 1
+    ##  $ legend.box.background     : list()
+    ##   ..- attr(*, "class")= chr [1:2] "element_blank" "element"
+    ##  $ legend.box.spacing        : 'simpleUnit' num 11points
+    ##   ..- attr(*, "unit")= int 8
+    ##  $ panel.background          : list()
+    ##   ..- attr(*, "class")= chr [1:2] "element_blank" "element"
+    ##  $ panel.border              : list()
+    ##   ..- attr(*, "class")= chr [1:2] "element_blank" "element"
+    ##  $ panel.spacing             : 'simpleUnit' num 5.5points
+    ##   ..- attr(*, "unit")= int 8
+    ##  $ panel.spacing.x           : NULL
+    ##  $ panel.spacing.y           : NULL
+    ##  $ panel.grid                :List of 6
+    ##   ..$ colour       : chr "grey92"
+    ##   ..$ linewidth    : NULL
+    ##   ..$ linetype     : NULL
+    ##   ..$ lineend      : NULL
+    ##   ..$ arrow        : logi FALSE
+    ##   ..$ inherit.blank: logi TRUE
+    ##   ..- attr(*, "class")= chr [1:2] "element_line" "element"
+    ##  $ panel.grid.major          : NULL
+    ##  $ panel.grid.minor          :List of 6
+    ##   ..$ colour       : NULL
+    ##   ..$ linewidth    : 'rel' num 0.5
+    ##   ..$ linetype     : NULL
+    ##   ..$ lineend      : NULL
+    ##   ..$ arrow        : logi FALSE
+    ##   ..$ inherit.blank: logi TRUE
+    ##   ..- attr(*, "class")= chr [1:2] "element_line" "element"
+    ##  $ panel.grid.major.x        : NULL
+    ##  $ panel.grid.major.y        : NULL
+    ##  $ panel.grid.minor.x        : NULL
+    ##  $ panel.grid.minor.y        : NULL
+    ##  $ panel.ontop               : logi FALSE
+    ##  $ plot.background           :List of 5
+    ##   ..$ fill         : chr "white"
+    ##   ..$ colour       : NULL
+    ##   ..$ linewidth    : NULL
+    ##   ..$ linetype     : NULL
+    ##   ..$ inherit.blank: logi FALSE
+    ##   ..- attr(*, "class")= chr [1:2] "element_rect" "element"
+    ##  $ plot.title                :List of 11
+    ##   ..$ family       : NULL
+    ##   ..$ face         : NULL
+    ##   ..$ colour       : NULL
+    ##   ..$ size         : 'rel' num 1.2
+    ##   ..$ hjust        : num 0
+    ##   ..$ vjust        : num 1
+    ##   ..$ angle        : NULL
+    ##   ..$ lineheight   : NULL
+    ##   ..$ margin       : 'margin' num [1:4] 0points 0points 5.5points 0points
+    ##   .. ..- attr(*, "unit")= int 8
+    ##   ..$ debug        : NULL
+    ##   ..$ inherit.blank: logi TRUE
+    ##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
+    ##  $ plot.title.position       : chr "panel"
+    ##  $ plot.subtitle             :List of 11
+    ##   ..$ family       : NULL
+    ##   ..$ face         : NULL
+    ##   ..$ colour       : NULL
+    ##   ..$ size         : NULL
+    ##   ..$ hjust        : num 0
+    ##   ..$ vjust        : num 1
+    ##   ..$ angle        : NULL
+    ##   ..$ lineheight   : NULL
+    ##   ..$ margin       : 'margin' num [1:4] 0points 0points 5.5points 0points
+    ##   .. ..- attr(*, "unit")= int 8
+    ##   ..$ debug        : NULL
+    ##   ..$ inherit.blank: logi TRUE
+    ##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
+    ##  $ plot.caption              :List of 11
+    ##   ..$ family       : NULL
+    ##   ..$ face         : NULL
+    ##   ..$ colour       : NULL
+    ##   ..$ size         : 'rel' num 0.8
+    ##   ..$ hjust        : num 1
+    ##   ..$ vjust        : num 1
+    ##   ..$ angle        : NULL
+    ##   ..$ lineheight   : NULL
+    ##   ..$ margin       : 'margin' num [1:4] 5.5points 0points 0points 0points
+    ##   .. ..- attr(*, "unit")= int 8
+    ##   ..$ debug        : NULL
+    ##   ..$ inherit.blank: logi TRUE
+    ##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
+    ##  $ plot.caption.position     : chr "panel"
+    ##  $ plot.tag                  :List of 11
+    ##   ..$ family       : NULL
+    ##   ..$ face         : NULL
+    ##   ..$ colour       : NULL
+    ##   ..$ size         : 'rel' num 1.2
+    ##   ..$ hjust        : num 0.5
+    ##   ..$ vjust        : num 0.5
+    ##   ..$ angle        : NULL
+    ##   ..$ lineheight   : NULL
+    ##   ..$ margin       : NULL
+    ##   ..$ debug        : NULL
+    ##   ..$ inherit.blank: logi TRUE
+    ##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
+    ##  $ plot.tag.position         : chr "topleft"
+    ##  $ plot.margin               : 'margin' num [1:4] 5.5points 5.5points 5.5points 5.5points
+    ##   ..- attr(*, "unit")= int 8
+    ##  $ strip.background          : list()
+    ##   ..- attr(*, "class")= chr [1:2] "element_blank" "element"
+    ##  $ strip.background.x        : NULL
+    ##  $ strip.background.y        : NULL
+    ##  $ strip.clip                : chr "inherit"
+    ##  $ strip.placement           : chr "outside"
+    ##  $ strip.text                :List of 11
+    ##   ..$ family       : NULL
+    ##   ..$ face         : NULL
+    ##   ..$ colour       : chr "grey10"
+    ##   ..$ size         : 'rel' num 0.8
+    ##   ..$ hjust        : num 0.5
+    ##   ..$ vjust        : NULL
+    ##   ..$ angle        : NULL
+    ##   ..$ lineheight   : NULL
+    ##   ..$ margin       : 'margin' num [1:4] 0points 0points 10points 0points
+    ##   .. ..- attr(*, "unit")= int 8
+    ##   ..$ debug        : NULL
+    ##   ..$ inherit.blank: logi FALSE
+    ##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
+    ##  $ strip.text.x              : NULL
+    ##  $ strip.text.x.bottom       : NULL
+    ##  $ strip.text.x.top          : NULL
+    ##  $ strip.text.y              :List of 11
+    ##   ..$ family       : NULL
+    ##   ..$ face         : NULL
+    ##   ..$ colour       : NULL
+    ##   ..$ size         : NULL
+    ##   ..$ hjust        : NULL
+    ##   ..$ vjust        : NULL
+    ##   ..$ angle        : num -90
+    ##   ..$ lineheight   : NULL
+    ##   ..$ margin       : NULL
+    ##   ..$ debug        : NULL
+    ##   ..$ inherit.blank: logi TRUE
+    ##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
+    ##  $ strip.text.y.left         :List of 11
+    ##   ..$ family       : NULL
+    ##   ..$ face         : NULL
+    ##   ..$ colour       : NULL
+    ##   ..$ size         : NULL
+    ##   ..$ hjust        : NULL
+    ##   ..$ vjust        : NULL
+    ##   ..$ angle        : num 90
+    ##   ..$ lineheight   : NULL
+    ##   ..$ margin       : NULL
+    ##   ..$ debug        : NULL
+    ##   ..$ inherit.blank: logi TRUE
+    ##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
+    ##  $ strip.text.y.right        : NULL
+    ##  $ strip.switch.pad.grid     : 'simpleUnit' num 2.75points
+    ##   ..- attr(*, "unit")= int 8
+    ##  $ strip.switch.pad.wrap     : 'simpleUnit' num 2.75points
+    ##   ..- attr(*, "unit")= int 8
+    ##  - attr(*, "class")= chr [1:2] "theme" "gg"
+    ##  - attr(*, "complete")= logi TRUE
+    ##  - attr(*, "validate")= logi TRUE
 
 ``` r
-knitr::include_graphics(output_dsimall)
+library(ggpubr)
+
+dyak_plot <- ggarrange(plot_dyak_x, plot_dyak_2l, ncol = 1, nrow = 2)
+dyak_plot
 ```
 
-<img src="dsim_overlap_all.png" width="2400" />
-
-``` r
-dya <- read.delim("/Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dyak/dyak.teinsertions", header = FALSE, sep = "\t", col.names = c("Sample_ID", "Chromosome", "Position", "Empty", "TE", "Order", "Strand", "Comment", "Frequency"))
-
-desired_chromosomes <- c("X", "2L", "2R", "3L", "3R")
-dya <- subset(dya, Chromosome %in% desired_chromosomes)
-
-dya$Sample_ID <- as.factor(dya$Sample_ID)
-
-library(dplyr)
-dya <- dya %>%
-  group_by(Chromosome, Sample_ID, Window = floor(Position/1000)) %>%
-  summarise(Cumulative_Frequency_dya = sum(Frequency)) %>%
-  ungroup()
-```
-
-    ## `summarise()` has grouped output by 'Chromosome', 'Sample_ID'. You can override
-    ## using the `.groups` argument.
-
-``` r
-library(tidyr)
-data_stacked_dya <- dya %>%
-  pivot_wider(names_from = Sample_ID, values_from = Cumulative_Frequency_dya, values_fill = 0) %>%
-  gather(Sample_ID, Cumulative_Frequency_dya, -Chromosome, -Window) %>%
-  arrange(Chromosome, Window)
-
-library(ggplot2)
-
-plot_dyakall <- ggplot(data_stacked_dya, aes(x = Window, y = Cumulative_Frequency_dya, fill = Sample_ID)) +
-  geom_bar(stat = "identity", position = "stack", color = "black", width = 150) +
-  labs(x = "Window", y = "Cumulative Frequency", fill = "Sample ID") +
-  theme_minimal() +
-  facet_wrap(~ Chromosome, scales = "free_x", ncol = 1) +
-  theme(plot.background = element_rect(fill = "white"),
-        strip.placement = "outside",
-        strip.background = element_blank(),
-        strip.text = element_text(hjust = 0.5, margin = margin(b = 10)))
-
-output_dyakall <- "/Volumes/Data/Projects/invaded_inbred_lines/R/iil_analysis/dna/dyak_overlap_all.png"
-ggsave(output_dyakall, plot = plot_dyakall, width = 8, height = 14)
-```
-
-    ## Warning: `position_stack()` requires non-overlapping x intervals
-    ## `position_stack()` requires non-overlapping x intervals
-    ## `position_stack()` requires non-overlapping x intervals
-    ## `position_stack()` requires non-overlapping x intervals
-    ## `position_stack()` requires non-overlapping x intervals
-
-``` r
-knitr::include_graphics(output_dyakall)
-```
-
-<img src="dyak_overlap_all.png" width="2400" />
+![](PopTE2_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
 
 # IGV
 
