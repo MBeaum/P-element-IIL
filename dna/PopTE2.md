@@ -1,7 +1,7 @@
 PopTE2
 ================
 Matthew Beaumont
-2023-06-26
+2023-06-27
 
 # PopoolationTE2
 
@@ -233,7 +233,7 @@ for (i in 1:10) {
     facet_grid(. ~ Chromosome, scales = "free_x", space = "free_x") +
     scale_x_continuous(breaks = c(0, 5000000, 10000000, 15000000, 20000000, 25000000),
                        labels = c("0", "5m", "10m", "15m", "20m", "25m")) +
-    scale_y_continuous(name = "Population frequency", limits = c(0, 1),
+    scale_y_continuous(name = "population frequency", limits = c(0, 1),
                        breaks = seq(0, 1, by = 0.1)) +
     scale_color_gradient(low = "blue", high = "red") +
     theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 14)) +
@@ -286,7 +286,7 @@ for (i in 1:10) {
     facet_grid(. ~ Chromosome, scales = "free_x", space = "free_x") +
     scale_x_continuous(breaks = c(0, 5000000, 10000000, 15000000, 20000000, 25000000),
                        labels = c("0", "5m", "10m", "15m", "20m", "25m")) +
-    scale_y_continuous(name = "Population frequency", limits = c(0, 1),
+    scale_y_continuous(name = "population frequency", limits = c(0, 1),
                        breaks = seq(0, 1, by = 0.1)) +
     scale_color_gradient(low = "blue", high = "red") +
     theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 14)) +
@@ -350,7 +350,7 @@ for (i in replicate_numbers) {
     facet_grid(. ~ Chromosome, scales = "free_x", space = "free_x") +
     scale_x_continuous(breaks = c(0, 5000000, 10000000, 15000000, 20000000, 25000000),
                        labels = c("0", "5m", "10m", "15m", "20m", "25m")) +
-    scale_y_continuous(name = "Population frequency", limits = c(0, 1),
+    scale_y_continuous(name = "population frequency", limits = c(0, 1),
                        breaks = seq(0, 1, by = 0.1)) +
     scale_color_gradient(low = "blue", high = "red") +
     theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 14)) +
@@ -370,7 +370,25 @@ ggsave("dna/figs/dyak_popTE2.png", grid, width = 24, height = 14, dpi = 300)
 knitr::include_graphics("dna/figs/dyak_popTE2.png")
 ```
 
-<img src="dna/figs/dyak_popTE2.png" width="7200" />
+<img src="dna/figs/dyak_popTE2.png" width="7200" /> There are only few
+replicates across all species which have seen the frequency of their
+P-element insertions generally reach fixation. These replicates are as
+such -
+
+- D. mel R3\*
+- D. mel R7\*
+- D. mel R8\*
+- D. sim R2
+- D. sim R4\*
+- D. sim R5\*
+
+\*would require extra validation/inbreeding, low frequency insertions
+present could likely be due to cross-contamination.
+
+Additionally, all of the D. yak replicates show wide variation in both
+the number and frequency of their insertions, suggesting that, when the
+replicates where taken for inbreeding, the original P-element invasion
+had not yet been suppressed and copy number was not stable.
 
 # Overlapping insertions
 
@@ -382,7 +400,7 @@ cross-contamination. This would also give us an idea as to the degree of
 cross-contamination, were we to find any.
 
 Here, we visualised all the insertions in all replicates of each
-species, using a stacked bar approcah to identify overlapping
+species, using a stacked bar approach to identify overlapping
 insertions, within a 1000bp window.
 
 ## Dmel
@@ -435,7 +453,7 @@ library(ggplot2)
 
 plot_dmelall <- ggplot(data_stacked_dma, aes(x = Window, y = Cumulative_Frequency_dma, fill = Sample_ID)) +
   geom_bar(stat = "identity", position = "stack", color = "black", width = 150) +
-  labs(x = "Window", y = "Cumulative Frequency", fill = "Sample ID") +
+  labs(x = "Window", y = "cumulative frequency", fill = "Sample ID") +
   theme_minimal() +
   facet_wrap(~ Chromosome, scales = "free_x", ncol = 1) +
   theme(plot.background = element_rect(fill = "white"),
@@ -491,7 +509,7 @@ library(ggplot2)
 
 plot_dsimall <- ggplot(data_stacked_dsa, aes(x = Window, y = Cumulative_Frequency_dsa, fill = Sample_ID)) +
   geom_bar(stat = "identity", position = "stack", color = "black", width = 150) +
-  labs(x = "Window", y = "Cumulative Frequency", fill = "Sample ID") +
+  labs(x = "Window", y = "cumulative frequency", fill = "Sample ID") +
   theme_minimal() +
   facet_wrap(~ Chromosome, scales = "free_x", ncol = 1) +
   theme(plot.background = element_rect(fill = "white"),
@@ -546,7 +564,7 @@ library(ggplot2)
 
 plot_dyakall <- ggplot(data_stacked_dya, aes(x = Window, y = Cumulative_Frequency_dya, fill = Sample_ID)) +
   geom_bar(stat = "identity", position = "stack", color = "black", width = 150) +
-  labs(x = "Window", y = "Cumulative Frequency", fill = "Sample ID") +
+  labs(x = "Window", y = "cumulative frequency", fill = "Sample ID") +
   theme_minimal() +
   facet_wrap(~ Chromosome, scales = "free_x", ncol = 1) +
   theme(plot.background = element_rect(fill = "white"),
@@ -661,7 +679,7 @@ library(ggplot2)
 
 plot_dmel <- ggplot(data_stacked, aes(x = Window, y = Cumulative_Frequency_dm, fill = Sample_ID)) +
   geom_bar(stat = "identity", position = "stack", color = "black", width = 125) +
-  labs(x = "Window", y = "Cumulative Frequency", fill = "Sample ID") +
+  labs(x = "Window", y = "cumulative frequency", fill = "Sample ID") +
   theme_minimal() +
   facet_wrap(~ Chromosome, scales = "free_x", ncol = 1) +
   theme(plot.background = element_rect(fill = "white"),
@@ -716,7 +734,7 @@ library(ggplot2)
 
 plot_dsim <- ggplot(data_stacked_ds, aes(x = Window, y = Cumulative_Frequency_ds, fill = Sample_ID)) +
   geom_bar(stat = "identity", position = "stack", color = "black", width = 150) +
-  labs(x = "Window", y = "Cumulative Frequency", fill = "Sample ID") +
+  labs(x = "Window", y = "cumulative frequency", fill = "Sample ID") +
   theme_minimal() +
   facet_wrap(~ Chromosome, scales = "free_x", ncol = 1) +
   theme(plot.background = element_rect(fill = "white"),
@@ -769,7 +787,7 @@ library(ggplot2)
 
 plot_dyak <- ggplot(data_stacked, aes(x = Window, y = Cumulative_Frequency_dy, fill = Sample_ID)) +
   geom_bar(stat = "identity", position = "stack", color = "black", width = 90) +
-  labs(x = "Window", y = "Cumulative Frequency", fill = "Sample ID") +
+  labs(x = "Window", y = "cumulative frequency", fill = "Sample ID") +
   theme_minimal() +
   facet_wrap(~ Chromosome, scales = "free_x", ncol = 1) +
   theme(plot.background = element_rect(fill = "white"),
@@ -784,13 +802,6 @@ knitr::include_graphics(output_dyak)
 ```
 
 <img src="dna/figs/dyak_overlap.png" width="2400" />
-
-As many of the replicates share the same genetic background from the
-original P-element invasion, overlapping insertions of similar frequency
-is somewhat expected. However, these insertions are not what we are
-trying to identify. To alleviate this, we filtered the input file
-further, looking for only insertions which have a frequency of \>0.7 in
-at least one replicate and \<0.3 in another.
 
 # Extra
 
@@ -807,12 +818,7 @@ data <- data %>%
   group_by(Chromosome, Sample_ID, Window = floor(Position/1000)) %>%
   summarise(Cumulative_Frequency_dy = sum(Frequency)) %>%
   ungroup()
-```
 
-    ## `summarise()` has grouped output by 'Chromosome', 'Sample_ID'. You can override
-    ## using the `.groups` argument.
-
-``` r
 library(tidyr)
 data_stacked_dya <- data %>%
   pivot_wider(names_from = Sample_ID, values_from = Cumulative_Frequency_dy, values_fill = 0) %>%
@@ -836,7 +842,7 @@ d4  <- data_stacked_dya %>%
 
 plot_dyak_x <- ggplot(dx, aes(x = Window, y = Cumulative_Frequency_dy, fill = Sample_ID)) +
   geom_bar(stat = "identity", position = "stack", color = "black", width = 90) +
-  labs(x = "Window", y = "Cumulative Frequency", fill = "Sample ID") +
+  labs(x = "Window", y = "cumulative frequency", fill = "Sample ID") +
   theme_minimal() +
   theme(plot.background = element_rect(fill = "white"),
         strip.placement = "outside",
@@ -852,410 +858,12 @@ plot_dyak_2l <- ggplot(d2l, aes(x = Window, y = Cumulative_Frequency_dy, fill = 
         strip.placement = "outside",
         strip.background = element_blank(),
         strip.text = element_text(hjust = 0.5, margin = margin(b = 10)))
-```
 
-    ## List of 97
-    ##  $ line                      :List of 6
-    ##   ..$ colour       : chr "black"
-    ##   ..$ linewidth    : num 0.5
-    ##   ..$ linetype     : num 1
-    ##   ..$ lineend      : chr "butt"
-    ##   ..$ arrow        : logi FALSE
-    ##   ..$ inherit.blank: logi TRUE
-    ##   ..- attr(*, "class")= chr [1:2] "element_line" "element"
-    ##  $ rect                      :List of 5
-    ##   ..$ fill         : chr "white"
-    ##   ..$ colour       : chr "black"
-    ##   ..$ linewidth    : num 0.5
-    ##   ..$ linetype     : num 1
-    ##   ..$ inherit.blank: logi TRUE
-    ##   ..- attr(*, "class")= chr [1:2] "element_rect" "element"
-    ##  $ text                      :List of 11
-    ##   ..$ family       : chr ""
-    ##   ..$ face         : chr "plain"
-    ##   ..$ colour       : chr "black"
-    ##   ..$ size         : num 11
-    ##   ..$ hjust        : num 0.5
-    ##   ..$ vjust        : num 0.5
-    ##   ..$ angle        : num 0
-    ##   ..$ lineheight   : num 0.9
-    ##   ..$ margin       : 'margin' num [1:4] 0points 0points 0points 0points
-    ##   .. ..- attr(*, "unit")= int 8
-    ##   ..$ debug        : logi FALSE
-    ##   ..$ inherit.blank: logi TRUE
-    ##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
-    ##  $ title                     : NULL
-    ##  $ aspect.ratio              : NULL
-    ##  $ axis.title                : NULL
-    ##  $ axis.title.x              :List of 11
-    ##   ..$ family       : NULL
-    ##   ..$ face         : NULL
-    ##   ..$ colour       : NULL
-    ##   ..$ size         : NULL
-    ##   ..$ hjust        : NULL
-    ##   ..$ vjust        : num 1
-    ##   ..$ angle        : NULL
-    ##   ..$ lineheight   : NULL
-    ##   ..$ margin       : 'margin' num [1:4] 2.75points 0points 0points 0points
-    ##   .. ..- attr(*, "unit")= int 8
-    ##   ..$ debug        : NULL
-    ##   ..$ inherit.blank: logi TRUE
-    ##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
-    ##  $ axis.title.x.top          :List of 11
-    ##   ..$ family       : NULL
-    ##   ..$ face         : NULL
-    ##   ..$ colour       : NULL
-    ##   ..$ size         : NULL
-    ##   ..$ hjust        : NULL
-    ##   ..$ vjust        : num 0
-    ##   ..$ angle        : NULL
-    ##   ..$ lineheight   : NULL
-    ##   ..$ margin       : 'margin' num [1:4] 0points 0points 2.75points 0points
-    ##   .. ..- attr(*, "unit")= int 8
-    ##   ..$ debug        : NULL
-    ##   ..$ inherit.blank: logi TRUE
-    ##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
-    ##  $ axis.title.x.bottom       : NULL
-    ##  $ axis.title.y              :List of 11
-    ##   ..$ family       : NULL
-    ##   ..$ face         : NULL
-    ##   ..$ colour       : NULL
-    ##   ..$ size         : NULL
-    ##   ..$ hjust        : NULL
-    ##   ..$ vjust        : num 1
-    ##   ..$ angle        : num 90
-    ##   ..$ lineheight   : NULL
-    ##   ..$ margin       : 'margin' num [1:4] 0points 2.75points 0points 0points
-    ##   .. ..- attr(*, "unit")= int 8
-    ##   ..$ debug        : NULL
-    ##   ..$ inherit.blank: logi TRUE
-    ##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
-    ##  $ axis.title.y.left         : NULL
-    ##  $ axis.title.y.right        :List of 11
-    ##   ..$ family       : NULL
-    ##   ..$ face         : NULL
-    ##   ..$ colour       : NULL
-    ##   ..$ size         : NULL
-    ##   ..$ hjust        : NULL
-    ##   ..$ vjust        : num 0
-    ##   ..$ angle        : num -90
-    ##   ..$ lineheight   : NULL
-    ##   ..$ margin       : 'margin' num [1:4] 0points 0points 0points 2.75points
-    ##   .. ..- attr(*, "unit")= int 8
-    ##   ..$ debug        : NULL
-    ##   ..$ inherit.blank: logi TRUE
-    ##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
-    ##  $ axis.text                 :List of 11
-    ##   ..$ family       : NULL
-    ##   ..$ face         : NULL
-    ##   ..$ colour       : chr "grey30"
-    ##   ..$ size         : 'rel' num 0.8
-    ##   ..$ hjust        : NULL
-    ##   ..$ vjust        : NULL
-    ##   ..$ angle        : NULL
-    ##   ..$ lineheight   : NULL
-    ##   ..$ margin       : NULL
-    ##   ..$ debug        : NULL
-    ##   ..$ inherit.blank: logi TRUE
-    ##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
-    ##  $ axis.text.x               :List of 11
-    ##   ..$ family       : NULL
-    ##   ..$ face         : NULL
-    ##   ..$ colour       : NULL
-    ##   ..$ size         : NULL
-    ##   ..$ hjust        : NULL
-    ##   ..$ vjust        : num 1
-    ##   ..$ angle        : NULL
-    ##   ..$ lineheight   : NULL
-    ##   ..$ margin       : 'margin' num [1:4] 2.2points 0points 0points 0points
-    ##   .. ..- attr(*, "unit")= int 8
-    ##   ..$ debug        : NULL
-    ##   ..$ inherit.blank: logi TRUE
-    ##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
-    ##  $ axis.text.x.top           :List of 11
-    ##   ..$ family       : NULL
-    ##   ..$ face         : NULL
-    ##   ..$ colour       : NULL
-    ##   ..$ size         : NULL
-    ##   ..$ hjust        : NULL
-    ##   ..$ vjust        : num 0
-    ##   ..$ angle        : NULL
-    ##   ..$ lineheight   : NULL
-    ##   ..$ margin       : 'margin' num [1:4] 0points 0points 2.2points 0points
-    ##   .. ..- attr(*, "unit")= int 8
-    ##   ..$ debug        : NULL
-    ##   ..$ inherit.blank: logi TRUE
-    ##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
-    ##  $ axis.text.x.bottom        : NULL
-    ##  $ axis.text.y               :List of 11
-    ##   ..$ family       : NULL
-    ##   ..$ face         : NULL
-    ##   ..$ colour       : NULL
-    ##   ..$ size         : NULL
-    ##   ..$ hjust        : num 1
-    ##   ..$ vjust        : NULL
-    ##   ..$ angle        : NULL
-    ##   ..$ lineheight   : NULL
-    ##   ..$ margin       : 'margin' num [1:4] 0points 2.2points 0points 0points
-    ##   .. ..- attr(*, "unit")= int 8
-    ##   ..$ debug        : NULL
-    ##   ..$ inherit.blank: logi TRUE
-    ##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
-    ##  $ axis.text.y.left          : NULL
-    ##  $ axis.text.y.right         :List of 11
-    ##   ..$ family       : NULL
-    ##   ..$ face         : NULL
-    ##   ..$ colour       : NULL
-    ##   ..$ size         : NULL
-    ##   ..$ hjust        : num 0
-    ##   ..$ vjust        : NULL
-    ##   ..$ angle        : NULL
-    ##   ..$ lineheight   : NULL
-    ##   ..$ margin       : 'margin' num [1:4] 0points 0points 0points 2.2points
-    ##   .. ..- attr(*, "unit")= int 8
-    ##   ..$ debug        : NULL
-    ##   ..$ inherit.blank: logi TRUE
-    ##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
-    ##  $ axis.ticks                : list()
-    ##   ..- attr(*, "class")= chr [1:2] "element_blank" "element"
-    ##  $ axis.ticks.x              : NULL
-    ##  $ axis.ticks.x.top          : NULL
-    ##  $ axis.ticks.x.bottom       : NULL
-    ##  $ axis.ticks.y              : NULL
-    ##  $ axis.ticks.y.left         : NULL
-    ##  $ axis.ticks.y.right        : NULL
-    ##  $ axis.ticks.length         : 'simpleUnit' num 2.75points
-    ##   ..- attr(*, "unit")= int 8
-    ##  $ axis.ticks.length.x       : NULL
-    ##  $ axis.ticks.length.x.top   : NULL
-    ##  $ axis.ticks.length.x.bottom: NULL
-    ##  $ axis.ticks.length.y       : NULL
-    ##  $ axis.ticks.length.y.left  : NULL
-    ##  $ axis.ticks.length.y.right : NULL
-    ##  $ axis.line                 : list()
-    ##   ..- attr(*, "class")= chr [1:2] "element_blank" "element"
-    ##  $ axis.line.x               : NULL
-    ##  $ axis.line.x.top           : NULL
-    ##  $ axis.line.x.bottom        : NULL
-    ##  $ axis.line.y               : NULL
-    ##  $ axis.line.y.left          : NULL
-    ##  $ axis.line.y.right         : NULL
-    ##  $ legend.background         : list()
-    ##   ..- attr(*, "class")= chr [1:2] "element_blank" "element"
-    ##  $ legend.margin             : 'margin' num [1:4] 5.5points 5.5points 5.5points 5.5points
-    ##   ..- attr(*, "unit")= int 8
-    ##  $ legend.spacing            : 'simpleUnit' num 11points
-    ##   ..- attr(*, "unit")= int 8
-    ##  $ legend.spacing.x          : NULL
-    ##  $ legend.spacing.y          : NULL
-    ##  $ legend.key                : list()
-    ##   ..- attr(*, "class")= chr [1:2] "element_blank" "element"
-    ##  $ legend.key.size           : 'simpleUnit' num 1.2lines
-    ##   ..- attr(*, "unit")= int 3
-    ##  $ legend.key.height         : NULL
-    ##  $ legend.key.width          : NULL
-    ##  $ legend.text               :List of 11
-    ##   ..$ family       : NULL
-    ##   ..$ face         : NULL
-    ##   ..$ colour       : NULL
-    ##   ..$ size         : 'rel' num 0.8
-    ##   ..$ hjust        : NULL
-    ##   ..$ vjust        : NULL
-    ##   ..$ angle        : NULL
-    ##   ..$ lineheight   : NULL
-    ##   ..$ margin       : NULL
-    ##   ..$ debug        : NULL
-    ##   ..$ inherit.blank: logi TRUE
-    ##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
-    ##  $ legend.text.align         : NULL
-    ##  $ legend.title              :List of 11
-    ##   ..$ family       : NULL
-    ##   ..$ face         : NULL
-    ##   ..$ colour       : NULL
-    ##   ..$ size         : NULL
-    ##   ..$ hjust        : num 0
-    ##   ..$ vjust        : NULL
-    ##   ..$ angle        : NULL
-    ##   ..$ lineheight   : NULL
-    ##   ..$ margin       : NULL
-    ##   ..$ debug        : NULL
-    ##   ..$ inherit.blank: logi TRUE
-    ##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
-    ##  $ legend.title.align        : NULL
-    ##  $ legend.position           : chr "right"
-    ##  $ legend.direction          : NULL
-    ##  $ legend.justification      : chr "center"
-    ##  $ legend.box                : NULL
-    ##  $ legend.box.just           : NULL
-    ##  $ legend.box.margin         : 'margin' num [1:4] 0cm 0cm 0cm 0cm
-    ##   ..- attr(*, "unit")= int 1
-    ##  $ legend.box.background     : list()
-    ##   ..- attr(*, "class")= chr [1:2] "element_blank" "element"
-    ##  $ legend.box.spacing        : 'simpleUnit' num 11points
-    ##   ..- attr(*, "unit")= int 8
-    ##  $ panel.background          : list()
-    ##   ..- attr(*, "class")= chr [1:2] "element_blank" "element"
-    ##  $ panel.border              : list()
-    ##   ..- attr(*, "class")= chr [1:2] "element_blank" "element"
-    ##  $ panel.spacing             : 'simpleUnit' num 5.5points
-    ##   ..- attr(*, "unit")= int 8
-    ##  $ panel.spacing.x           : NULL
-    ##  $ panel.spacing.y           : NULL
-    ##  $ panel.grid                :List of 6
-    ##   ..$ colour       : chr "grey92"
-    ##   ..$ linewidth    : NULL
-    ##   ..$ linetype     : NULL
-    ##   ..$ lineend      : NULL
-    ##   ..$ arrow        : logi FALSE
-    ##   ..$ inherit.blank: logi TRUE
-    ##   ..- attr(*, "class")= chr [1:2] "element_line" "element"
-    ##  $ panel.grid.major          : NULL
-    ##  $ panel.grid.minor          :List of 6
-    ##   ..$ colour       : NULL
-    ##   ..$ linewidth    : 'rel' num 0.5
-    ##   ..$ linetype     : NULL
-    ##   ..$ lineend      : NULL
-    ##   ..$ arrow        : logi FALSE
-    ##   ..$ inherit.blank: logi TRUE
-    ##   ..- attr(*, "class")= chr [1:2] "element_line" "element"
-    ##  $ panel.grid.major.x        : NULL
-    ##  $ panel.grid.major.y        : NULL
-    ##  $ panel.grid.minor.x        : NULL
-    ##  $ panel.grid.minor.y        : NULL
-    ##  $ panel.ontop               : logi FALSE
-    ##  $ plot.background           :List of 5
-    ##   ..$ fill         : chr "white"
-    ##   ..$ colour       : NULL
-    ##   ..$ linewidth    : NULL
-    ##   ..$ linetype     : NULL
-    ##   ..$ inherit.blank: logi FALSE
-    ##   ..- attr(*, "class")= chr [1:2] "element_rect" "element"
-    ##  $ plot.title                :List of 11
-    ##   ..$ family       : NULL
-    ##   ..$ face         : NULL
-    ##   ..$ colour       : NULL
-    ##   ..$ size         : 'rel' num 1.2
-    ##   ..$ hjust        : num 0
-    ##   ..$ vjust        : num 1
-    ##   ..$ angle        : NULL
-    ##   ..$ lineheight   : NULL
-    ##   ..$ margin       : 'margin' num [1:4] 0points 0points 5.5points 0points
-    ##   .. ..- attr(*, "unit")= int 8
-    ##   ..$ debug        : NULL
-    ##   ..$ inherit.blank: logi TRUE
-    ##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
-    ##  $ plot.title.position       : chr "panel"
-    ##  $ plot.subtitle             :List of 11
-    ##   ..$ family       : NULL
-    ##   ..$ face         : NULL
-    ##   ..$ colour       : NULL
-    ##   ..$ size         : NULL
-    ##   ..$ hjust        : num 0
-    ##   ..$ vjust        : num 1
-    ##   ..$ angle        : NULL
-    ##   ..$ lineheight   : NULL
-    ##   ..$ margin       : 'margin' num [1:4] 0points 0points 5.5points 0points
-    ##   .. ..- attr(*, "unit")= int 8
-    ##   ..$ debug        : NULL
-    ##   ..$ inherit.blank: logi TRUE
-    ##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
-    ##  $ plot.caption              :List of 11
-    ##   ..$ family       : NULL
-    ##   ..$ face         : NULL
-    ##   ..$ colour       : NULL
-    ##   ..$ size         : 'rel' num 0.8
-    ##   ..$ hjust        : num 1
-    ##   ..$ vjust        : num 1
-    ##   ..$ angle        : NULL
-    ##   ..$ lineheight   : NULL
-    ##   ..$ margin       : 'margin' num [1:4] 5.5points 0points 0points 0points
-    ##   .. ..- attr(*, "unit")= int 8
-    ##   ..$ debug        : NULL
-    ##   ..$ inherit.blank: logi TRUE
-    ##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
-    ##  $ plot.caption.position     : chr "panel"
-    ##  $ plot.tag                  :List of 11
-    ##   ..$ family       : NULL
-    ##   ..$ face         : NULL
-    ##   ..$ colour       : NULL
-    ##   ..$ size         : 'rel' num 1.2
-    ##   ..$ hjust        : num 0.5
-    ##   ..$ vjust        : num 0.5
-    ##   ..$ angle        : NULL
-    ##   ..$ lineheight   : NULL
-    ##   ..$ margin       : NULL
-    ##   ..$ debug        : NULL
-    ##   ..$ inherit.blank: logi TRUE
-    ##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
-    ##  $ plot.tag.position         : chr "topleft"
-    ##  $ plot.margin               : 'margin' num [1:4] 5.5points 5.5points 5.5points 5.5points
-    ##   ..- attr(*, "unit")= int 8
-    ##  $ strip.background          : list()
-    ##   ..- attr(*, "class")= chr [1:2] "element_blank" "element"
-    ##  $ strip.background.x        : NULL
-    ##  $ strip.background.y        : NULL
-    ##  $ strip.clip                : chr "inherit"
-    ##  $ strip.placement           : chr "outside"
-    ##  $ strip.text                :List of 11
-    ##   ..$ family       : NULL
-    ##   ..$ face         : NULL
-    ##   ..$ colour       : chr "grey10"
-    ##   ..$ size         : 'rel' num 0.8
-    ##   ..$ hjust        : num 0.5
-    ##   ..$ vjust        : NULL
-    ##   ..$ angle        : NULL
-    ##   ..$ lineheight   : NULL
-    ##   ..$ margin       : 'margin' num [1:4] 0points 0points 10points 0points
-    ##   .. ..- attr(*, "unit")= int 8
-    ##   ..$ debug        : NULL
-    ##   ..$ inherit.blank: logi FALSE
-    ##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
-    ##  $ strip.text.x              : NULL
-    ##  $ strip.text.x.bottom       : NULL
-    ##  $ strip.text.x.top          : NULL
-    ##  $ strip.text.y              :List of 11
-    ##   ..$ family       : NULL
-    ##   ..$ face         : NULL
-    ##   ..$ colour       : NULL
-    ##   ..$ size         : NULL
-    ##   ..$ hjust        : NULL
-    ##   ..$ vjust        : NULL
-    ##   ..$ angle        : num -90
-    ##   ..$ lineheight   : NULL
-    ##   ..$ margin       : NULL
-    ##   ..$ debug        : NULL
-    ##   ..$ inherit.blank: logi TRUE
-    ##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
-    ##  $ strip.text.y.left         :List of 11
-    ##   ..$ family       : NULL
-    ##   ..$ face         : NULL
-    ##   ..$ colour       : NULL
-    ##   ..$ size         : NULL
-    ##   ..$ hjust        : NULL
-    ##   ..$ vjust        : NULL
-    ##   ..$ angle        : num 90
-    ##   ..$ lineheight   : NULL
-    ##   ..$ margin       : NULL
-    ##   ..$ debug        : NULL
-    ##   ..$ inherit.blank: logi TRUE
-    ##   ..- attr(*, "class")= chr [1:2] "element_text" "element"
-    ##  $ strip.text.y.right        : NULL
-    ##  $ strip.switch.pad.grid     : 'simpleUnit' num 2.75points
-    ##   ..- attr(*, "unit")= int 8
-    ##  $ strip.switch.pad.wrap     : 'simpleUnit' num 2.75points
-    ##   ..- attr(*, "unit")= int 8
-    ##  - attr(*, "class")= chr [1:2] "theme" "gg"
-    ##  - attr(*, "complete")= logi TRUE
-    ##  - attr(*, "validate")= logi TRUE
-
-``` r
 library(ggpubr)
 
 dyak_plot <- ggarrange(plot_dyak_x, plot_dyak_2l, ncol = 1, nrow = 2)
 dyak_plot
 ```
-
-![](PopTE2_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
 
 # IGV
 

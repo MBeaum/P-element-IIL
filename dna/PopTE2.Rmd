@@ -226,7 +226,7 @@ for (i in 1:10) {
     facet_grid(. ~ Chromosome, scales = "free_x", space = "free_x") +
     scale_x_continuous(breaks = c(0, 5000000, 10000000, 15000000, 20000000, 25000000),
                        labels = c("0", "5m", "10m", "15m", "20m", "25m")) +
-    scale_y_continuous(name = "Population frequency", limits = c(0, 1),
+    scale_y_continuous(name = "population frequency", limits = c(0, 1),
                        breaks = seq(0, 1, by = 0.1)) +
     scale_color_gradient(low = "blue", high = "red") +
     theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 14)) +
@@ -274,7 +274,7 @@ for (i in 1:10) {
     facet_grid(. ~ Chromosome, scales = "free_x", space = "free_x") +
     scale_x_continuous(breaks = c(0, 5000000, 10000000, 15000000, 20000000, 25000000),
                        labels = c("0", "5m", "10m", "15m", "20m", "25m")) +
-    scale_y_continuous(name = "Population frequency", limits = c(0, 1),
+    scale_y_continuous(name = "population frequency", limits = c(0, 1),
                        breaks = seq(0, 1, by = 0.1)) +
     scale_color_gradient(low = "blue", high = "red") +
     theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 14)) +
@@ -333,7 +333,7 @@ for (i in replicate_numbers) {
     facet_grid(. ~ Chromosome, scales = "free_x", space = "free_x") +
     scale_x_continuous(breaks = c(0, 5000000, 10000000, 15000000, 20000000, 25000000),
                        labels = c("0", "5m", "10m", "15m", "20m", "25m")) +
-    scale_y_continuous(name = "Population frequency", limits = c(0, 1),
+    scale_y_continuous(name = "population frequency", limits = c(0, 1),
                        breaks = seq(0, 1, by = 0.1)) +
     scale_color_gradient(low = "blue", high = "red") +
     theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 14)) +
@@ -349,12 +349,25 @@ ggsave("dna/figs/dyak_popTE2.png", grid, width = 24, height = 14, dpi = 300)
 knitr::include_graphics("dna/figs/dyak_popTE2.png")
 
 ```
+There are only few replicates across all species which have seen the frequency of their P-element insertions generally reach fixation. These replicates are as such -
+
+- D. mel R3*
+- D. mel R7* 
+- D. mel R8*
+- D. sim R2
+- D. sim R4*
+- D. sim R5*
+
+*would require extra validation/inbreeding, low frequency insertions present could likely be due to cross-contamination.
+
+Additionally, all of the D. yak replicates show wide variation in both the number and frequency of their insertions, suggesting that, when the replicates where taken for inbreeding, the original P-element invasion had not yet been suppressed and copy number was not stable.
+
 
 # Overlapping insertions
 
 We wanted to assess the number and frequency of similar/overlapping insertions across all replicates in each species. This way, if we had insertions of high frequencies overlapping with insertions of lower frequencies in other samples, we could attribute this to cross-contamination. This would also give us an idea as to the degree of cross-contamination, were we to find any. 
 
-Here, we visualised all the insertions in all replicates of each species, using a stacked bar approcah to identify overlapping insertions, within a 1000bp window.
+Here, we visualised all the insertions in all replicates of each species, using a stacked bar approach to identify overlapping insertions, within a 1000bp window.
 
 ## Dmel
 
@@ -383,7 +396,7 @@ library(ggplot2)
 
 plot_dmelall <- ggplot(data_stacked_dma, aes(x = Window, y = Cumulative_Frequency_dma, fill = Sample_ID)) +
   geom_bar(stat = "identity", position = "stack", color = "black", width = 150) +
-  labs(x = "Window", y = "Cumulative Frequency", fill = "Sample ID") +
+  labs(x = "Window", y = "cumulative frequency", fill = "Sample ID") +
   theme_minimal() +
   facet_wrap(~ Chromosome, scales = "free_x", ncol = 1) +
   theme(plot.background = element_rect(fill = "white"),
@@ -425,7 +438,7 @@ library(ggplot2)
 
 plot_dsimall <- ggplot(data_stacked_dsa, aes(x = Window, y = Cumulative_Frequency_dsa, fill = Sample_ID)) +
   geom_bar(stat = "identity", position = "stack", color = "black", width = 150) +
-  labs(x = "Window", y = "Cumulative Frequency", fill = "Sample ID") +
+  labs(x = "Window", y = "cumulative frequency", fill = "Sample ID") +
   theme_minimal() +
   facet_wrap(~ Chromosome, scales = "free_x", ncol = 1) +
   theme(plot.background = element_rect(fill = "white"),
@@ -468,7 +481,7 @@ library(ggplot2)
 
 plot_dyakall <- ggplot(data_stacked_dya, aes(x = Window, y = Cumulative_Frequency_dya, fill = Sample_ID)) +
   geom_bar(stat = "identity", position = "stack", color = "black", width = 150) +
-  labs(x = "Window", y = "Cumulative Frequency", fill = "Sample ID") +
+  labs(x = "Window", y = "cumulative frequency", fill = "Sample ID") +
   theme_minimal() +
   facet_wrap(~ Chromosome, scales = "free_x", ncol = 1) +
   theme(plot.background = element_rect(fill = "white"),
@@ -565,7 +578,7 @@ library(ggplot2)
 
 plot_dmel <- ggplot(data_stacked, aes(x = Window, y = Cumulative_Frequency_dm, fill = Sample_ID)) +
   geom_bar(stat = "identity", position = "stack", color = "black", width = 125) +
-  labs(x = "Window", y = "Cumulative Frequency", fill = "Sample ID") +
+  labs(x = "Window", y = "cumulative frequency", fill = "Sample ID") +
   theme_minimal() +
   facet_wrap(~ Chromosome, scales = "free_x", ncol = 1) +
   theme(plot.background = element_rect(fill = "white"),
@@ -607,7 +620,7 @@ library(ggplot2)
 
 plot_dsim <- ggplot(data_stacked_ds, aes(x = Window, y = Cumulative_Frequency_ds, fill = Sample_ID)) +
   geom_bar(stat = "identity", position = "stack", color = "black", width = 150) +
-  labs(x = "Window", y = "Cumulative Frequency", fill = "Sample ID") +
+  labs(x = "Window", y = "cumulative frequency", fill = "Sample ID") +
   theme_minimal() +
   facet_wrap(~ Chromosome, scales = "free_x", ncol = 1) +
   theme(plot.background = element_rect(fill = "white"),
@@ -649,7 +662,7 @@ library(ggplot2)
 
 plot_dyak <- ggplot(data_stacked, aes(x = Window, y = Cumulative_Frequency_dy, fill = Sample_ID)) +
   geom_bar(stat = "identity", position = "stack", color = "black", width = 90) +
-  labs(x = "Window", y = "Cumulative Frequency", fill = "Sample ID") +
+  labs(x = "Window", y = "cumulative frequency", fill = "Sample ID") +
   theme_minimal() +
   facet_wrap(~ Chromosome, scales = "free_x", ncol = 1) +
   theme(plot.background = element_rect(fill = "white"),
@@ -664,12 +677,9 @@ knitr::include_graphics(output_dyak)
 
 ```
 
-As many of the replicates share the same genetic background from the original P-element invasion, overlapping insertions of similar frequency is somewhat expected. However, these insertions are not what we are trying to identify. To alleviate this, we filtered the input file further, looking for only insertions which have a frequency of >0.7 in at least one replicate and <0.3 in another.
-
-
 # Extra
 
-```{R}
+```{R eval=FALSE}
 data <- read.delim("/Volumes/Data/Projects/invaded_inbred_lines/scripts/dyak_window_overlap.txt", header = FALSE, sep = "\t", col.names = c("Sample_ID", "Chromosome", "Position", "Frequency"))
 
 desired_chromosomes <- c("X", "2L", "2R", "3L", "3R")
@@ -706,7 +716,7 @@ d4  <- data_stacked_dya %>%
 
 plot_dyak_x <- ggplot(dx, aes(x = Window, y = Cumulative_Frequency_dy, fill = Sample_ID)) +
   geom_bar(stat = "identity", position = "stack", color = "black", width = 90) +
-  labs(x = "Window", y = "Cumulative Frequency", fill = "Sample ID") +
+  labs(x = "Window", y = "cumulative frequency", fill = "Sample ID") +
   theme_minimal() +
   theme(plot.background = element_rect(fill = "white"),
         strip.placement = "outside",
