@@ -84,43 +84,193 @@ This provided us with the following PDFs for each of the lines assessed
 ()
 
 ``` r
-knitr::include_graphics("figs/Dmel_1.PPI251.pdf")
+knitr::include_graphics("figs/deviaTE_png/Dmel_1.PPI251.png")
 ```
 
-![](figs/Dmel_1.PPI251.pdf)<!-- -->
+<img src="figs/deviaTE_png/Dmel_1.PPI251.png" width="7083" />
 
 ``` r
-knitr::include_graphics("figs/Dmel_2.PPI251.pdf")
+knitr::include_graphics("figs/deviaTE_png/Dmel_2.PPI251.png")
 ```
 
-![](figs/Dmel_2.PPI251.pdf)<!-- -->
+<img src="figs/deviaTE_png/Dmel_2.PPI251.png" width="7083" />
 
 ``` r
-knitr::include_graphics("figs/Dmel_3.PPI251.pdf")
+knitr::include_graphics("figs/deviaTE_png/Dmel_3.PPI251.png")
 ```
 
-![](figs/Dmel_3.PPI251.pdf)<!-- -->
+<img src="figs/deviaTE_png/Dmel_3.PPI251.png" width="7083" />
 
 ``` r
-knitr::include_graphics("figs/Dmel_4.PPI251.pdf")
+knitr::include_graphics("figs/deviaTE_png/Dmel_4.PPI251.png")
 ```
 
-![](figs/Dmel_4.PPI251.pdf)<!-- -->
+<img src="figs/deviaTE_png/Dmel_4.PPI251.png" width="7083" />
 
 ``` r
-knitr::include_graphics("figs/Dmel_5.PPI251.pdf")
+knitr::include_graphics("figs/deviaTE_png/Dmel_5.PPI251.png")
 ```
 
-![](figs/Dmel_5.PPI251.pdf)<!-- -->
+<img src="figs/deviaTE_png/Dmel_5.PPI251.png" width="7083" />
 
 ``` r
-knitr::include_graphics("figs/Dmel_6.PPI251.pdf")
+knitr::include_graphics("figs/deviaTE_png/Dmel_6.PPI251.png")
 ```
 
-![](figs/Dmel_6.PPI251.pdf)<!-- -->
+<img src="figs/deviaTE_png/Dmel_6.PPI251.png" width="7083" />
 
 ``` r
-knitr::include_graphics("figs/Dmel_7.PPI251.pdf")
+knitr::include_graphics("figs/deviaTE_png/Dmel_7.PPI251.png")
 ```
 
-![](figs/Dmel_7.PPI251.pdf)<!-- -->
+<img src="figs/deviaTE_png/Dmel_7.PPI251.png" width="7083" />
+
+``` r
+knitr::include_graphics("figs/deviaTE_png/Dmel_8.PPI251.png")
+```
+
+<img src="figs/deviaTE_png/Dmel_8.PPI251.png" width="7083" />
+
+``` r
+knitr::include_graphics("figs/deviaTE_png/Dmel_9.PPI251.png")
+```
+
+<img src="figs/deviaTE_png/Dmel_9.PPI251.png" width="7083" />
+
+``` r
+knitr::include_graphics("figs/deviaTE_png/Dmel_10.PPI251.png")
+```
+
+<img src="figs/deviaTE_png/Dmel_10.PPI251.png" width="7083" />
+
+``` r
+knitr::include_graphics("figs/deviaTE_png/Dmel_N1.PPI251.png")
+```
+
+<img src="figs/deviaTE_png/Dmel_N1.PPI251.png" width="7083" />
+
+``` r
+knitr::include_graphics("figs/deviaTE_png/Dsim_11.PPI251.png")
+```
+
+<img src="figs/deviaTE_png/Dsim_11.PPI251.png" width="7083" />
+
+``` r
+knitr::include_graphics("figs/deviaTE_png/Dsim_12.PPI251.png")
+```
+
+<img src="figs/deviaTE_png/Dsim_12.PPI251.png" width="7083" />
+
+``` r
+knitr::include_graphics("figs/deviaTE_png/Dsim_13.PPI251.png")
+```
+
+<img src="figs/deviaTE_png/Dsim_13.PPI251.png" width="7083" />
+
+``` r
+knitr::include_graphics("figs/deviaTE_png/Dsim_14.PPI251.png")
+```
+
+<img src="figs/deviaTE_png/Dsim_14.PPI251.png" width="7083" />
+
+``` r
+knitr::include_graphics("figs/deviaTE_png/Dsim_15.PPI251.png")
+```
+
+<img src="figs/deviaTE_png/Dsim_15.PPI251.png" width="7083" />
+
+``` r
+knitr::include_graphics("figs/deviaTE_png/Dsim_16.PPI251.png")
+```
+
+<img src="figs/deviaTE_png/Dsim_16.PPI251.png" width="7083" />
+
+``` r
+knitr::include_graphics("figs/deviaTE_png/Dsim_17.PPI251.png")
+```
+
+<img src="figs/deviaTE_png/Dsim_17.PPI251.png" width="7083" />
+
+``` r
+knitr::include_graphics("figs/deviaTE_png/Dsim_18.PPI251.png")
+```
+
+<img src="figs/deviaTE_png/Dsim_18.PPI251.png" width="7083" />
+
+``` r
+knitr::include_graphics("figs/deviaTE_png/Dsim_19.PPI251.png")
+```
+
+<img src="figs/deviaTE_png/Dsim_19.PPI251.png" width="7083" />
+
+``` r
+knitr::include_graphics("figs/deviaTE_png/Dsim_20.PPI251.png")
+```
+
+<img src="figs/deviaTE_png/Dsim_20.PPI251.png" width="7083" />
+
+``` r
+knitr::include_graphics("figs/deviaTE_png/Dsim_N2.PPI251.png")
+```
+
+<img src="figs/deviaTE_png/Dsim_N2.PPI251.png" width="7083" />
+
+``` r
+knitr::include_graphics("figs/deviaTE_png/Dyak_21.PPI251.png")
+```
+
+<img src="figs/deviaTE_png/Dyak_21.PPI251.png" width="7083" />
+
+``` r
+knitr::include_graphics("figs/deviaTE_png/Dyak_23.PPI251.png")
+```
+
+<img src="figs/deviaTE_png/Dyak_23.PPI251.png" width="7083" />
+
+``` r
+knitr::include_graphics("figs/deviaTE_png/Dyak_24.PPI251.png")
+```
+
+<img src="figs/deviaTE_png/Dyak_24.PPI251.png" width="7083" />
+
+``` r
+knitr::include_graphics("figs/deviaTE_png/Dyak_25.PPI251.png")
+```
+
+<img src="figs/deviaTE_png/Dyak_25.PPI251.png" width="7083" />
+
+``` r
+knitr::include_graphics("figs/deviaTE_png/Dyak_26.PPI251.png")
+```
+
+<img src="figs/deviaTE_png/Dyak_26.PPI251.png" width="7083" />
+
+``` r
+knitr::include_graphics("figs/deviaTE_png/Dyak_27.PPI251.png")
+```
+
+<img src="figs/deviaTE_png/Dyak_27.PPI251.png" width="7083" />
+
+``` r
+knitr::include_graphics("figs/deviaTE_png/Dyak_28.PPI251.png")
+```
+
+<img src="figs/deviaTE_png/Dyak_28.PPI251.png" width="7083" />
+
+``` r
+knitr::include_graphics("figs/deviaTE_png/Dyak_29.PPI251.png")
+```
+
+<img src="figs/deviaTE_png/Dyak_29.PPI251.png" width="7083" />
+
+``` r
+knitr::include_graphics("figs/deviaTE_png/Dyak_30.PPI251.png")
+```
+
+<img src="figs/deviaTE_png/Dyak_30.PPI251.png" width="7083" />
+
+``` r
+knitr::include_graphics("figs/deviaTE_png/Dyak_N3.PPI251.png")
+```
+
+<img src="figs/deviaTE_png/Dyak_N3.PPI251.png" width="7083" />
