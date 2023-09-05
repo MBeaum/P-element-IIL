@@ -1,5 +1,5 @@
 ---
-title: "Invaded-inbred lines DNA-seq analysis"
+title: "1 - Invaded-inbred lines DNA-seq analysis"
 author: "Matthew Beaumont"
 date: "`r Sys.Date()`"
 output: github_document
@@ -9,13 +9,11 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+# Data preparation
+
+After inbreeding 10 replicate lines of three Drosophila spp (D. melanogaster, D. simulans & D. yakuba) for 10 generations each, we submitted all 30 samples, plus one naive sample for each species, for sequencing.
+
 We were provided with the following BAM files containing the multiplexed DNA sequencing reads for all of our samples (plus the i-seq probe).
-
-```{bash}
-cd /Volumes/Data/Projects/invaded_inbred_lines/dna/raw
-ls -h *.bam
-
-```
 
 These two files were merged using the built in samtools command.
 
@@ -24,8 +22,14 @@ samtools merge -o iil_merged.bam HY5WYDRX2_1_20230419B_20230420.bam HY5WYDRX2_2_
 
 ```
 
-Then, we ran the merged BAM file through the following two scripts, respectively. This was in order to demultiplex the files and extract out each read by their index primer sequence.
+```{bash}
+cd /Volumes/Data/Projects/invaded_inbred_lines/dna/raw
+ls -h *.bam
 
+```
+
+Then, we ran the merged BAM file through the following two scripts, respectively. This was in order to demultiplex the files and extract out each read by their index primer sequence. 
+The second script was meant as a catch-all, for all possible remaining index sequences after the first script was run. This was done as a result of missing two missing samples from the first demultiplexing.
 
 ```{bash, eval=FALSE}
 samtools view --threads 10 /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/iil_merged.bam | paste -d "|" - - | tee >(grep BC:Z:ATCACG |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/demultiplexed/Dmel_1.bam) >(grep BC:Z:CGATGT |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/demultiplexed/Dmel_2.bam) >(grep BC:Z:TTAGGC |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/demultiplexed/Dmel_3.bam) >(grep BC:Z:TGACCA |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/demultiplexed/Dmel_4.bam) >(grep BC:Z:ACAGTG |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/demultiplexed/Dmel_5.bam) >(grep BC:Z:GCCAAT |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/demultiplexed/Dmel_6.bam) >(grep BC:Z:CAGATC |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/demultiplexed/Dmel_7.bam) >(grep BC:Z:ACTTGA |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/demultiplexed/Dmel_8.bam) >(grep BC:Z:GATCAG |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/demultiplexed/Dmel_9.bam) >(grep BC:Z:TAGCTT |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/demultiplexed/Dmel_10.bam) >(grep BC:Z:GGCTAC |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/demultiplexed/Dsim_11.bam) >(grep BC:Z:CTTGTA |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/demultiplexed/Dsim_12.bam) >(grep BC:Z:AGTCAA |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/demultiplexed/Dsim_13.bam) >(grep BC:Z:AGTTCC |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/demultiplexed/Dsim_14.bam) >(grep BC:Z:ATGTCA |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/demultiplexed/Dsim_15.bam) >(grep BC:Z:CCGTCC |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/demultiplexed/Dsim_16.bam) >(grep BC:Z:GTAGAG |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/demultiplexed/Dsim_17.bam) >(grep BC:Z:GTCCGC |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/demultiplexed/Dsim_18.bam) >(grep BC:Z:GTGAAA |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/demultiplexed/Dsim_19.bam) >(grep BC:Z:GTGGCC |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/demultiplexed/Dsim_20.bam) >(grep BC:Z:GTTTCG |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/demultiplexed/Dyak_21.bam) >(grep BC:Z:CGTACG |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/demultiplexed/Dyak_22.bam) >(grep BC:Z:GAGTGG |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/demultiplexed/Dyak_23.bam) >(grep BC:Z:GGTAGC |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/demultiplexed/Dyak_24.bam) >(grep BC:Z:ACTGAT |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/demultiplexed/Dyak_25.bam) >(grep BC:Z:ATGAGC |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/demultiplexed/Dyak_26.bam) >(grep BC:Z:ATTCCT |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/demultiplexed/Dyak_27.bam) >(grep BC:Z:CAAAAG |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/demultiplexed/Dyak_28.bam) >(grep BC:Z:CAACTA |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/demultiplexed/Dyak_29.bam) >(grep BC:Z:CACCGG |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/demultiplexed/Dyak_30.bam) >(grep BC:Z:CACGAT |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/demultiplexed/Dmel_N1.bam) >(grep BC:Z:CACTCA |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/demultiplexed/Dsim_N2.bam) >(grep BC:Z:CAGGCG |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/demultiplexed/Dyak_N3.bam) >(grep BC:Z:CATTTT |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/demultiplexed/Dere_A2.bam) >(grep BC:Z:GGGGGG |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/demultiplexed/GGGGGG.bam) | grep BC:Z:NNNNNN |tr "|" "\n" | samtools view --threads 2 -b > /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/demultiplexed/NNNNNN.bam
@@ -34,7 +38,7 @@ samtools view --threads 10 /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/H
 
 ```
 
-# BAM to FASTQ
+## BAM to FASTQ
 
 Converting directory of BAM files to gzipped FASTQ files and splitting PE into separate forward and reverse reads.
 
@@ -46,9 +50,9 @@ done
 
 ```
 
-# Quality control
+## Quality control
 
-We then ran the FastQC tool to reassess the quality of the fq.gz files for each individual sample, granting the following results.
+We then ran the fastQC tool to assess the quality of the fq.gz files for each individual sample, granting the following results.
 
 ``` {bash eval=FALSE}
 
@@ -57,42 +61,33 @@ We then ran the FastQC tool to reassess the quality of the fq.gz files for each 
 
 # DeviaTE analysis
 
-Fastq-miner
+To assess the estimated P-element copy number and coverage across the lines, we used the DeviaTE tool. 
+
+
+This began by first using the Fastq-miner.
 
 ``` {bash eval=FALSE}
 nohup zsh fastq-miner.sh iil /Volumes/Data/Projects/invaded_inbred_lines/dna/raw/output/FastQ > /Volumes/Data/Projects/invaded_inbred_lines/logs/IIlines.log &
 
 ```
 
+Then using deviaTE, targeting the P-element (PPI251), to generate coverage plots.
 
 ``` {bash eval=FALSE}
 nohup zsh deviate-family.sh iil PPI251 > /Volumes/Data/Projects/invaded_inbred_lines/logs/IIlines.log &
 
 ```
 
-# Renaming FastQ files
+This provided us with the following PDFs for each of the lines assessed ()
 
-We then realised that the identifier lines of our PE fastq.gz read files were not annotated with a /1 or /2, for forward and reverse reads respectively, which would cause some errors down the line. So we ran the following script in order to fix this.
+```{R}
 
-``` {bash eval=FALSE}
-# Specify the output directory
-output_directory="/Volumes/Data/Projects/invaded_inbred_lines/dna/demultiplexed/renamed_fastq2"
-
-# Create the output directory if it doesn't exist
-mkdir -p "$output_directory"
-
-# Process forward reads
-for file in /Volumes/Data/Projects/invaded_inbred_lines/dna/demultiplexed/fastq2/*_1.fq.gz; do
-    output_file="$output_directory/renamed_${file##*/}"
-    gzip -cd "$file" | paste - - - - | awk '{print $1"/1"; print $2; print $3; print $4}' | tr '\t' '\n' | gzip -c > "$output_file"
-done
-
-# Process reverse reads
-for file in /Volumes/Data/Projects/invaded_inbred_lines/dna/demultiplexed/fastq2/*_2.fq.gz; do
-    output_file="$output_directory/renamed_${file##*/}"
-    gzip -cd "$file" | paste - - - - | awk '{print $1"/2"; print $2; print $3; print $4}' | tr '\t' '\n' | gzip -c > "$output_file"
-done
+knitr::include_graphics("figs/Dmel_1.PPI251.pdf")
+knitr::include_graphics("figs/Dmel_2.PPI251.pdf")
+knitr::include_graphics("figs/Dmel_3.PPI251.pdf")
+knitr::include_graphics("figs/Dmel_4.PPI251.pdf")
+knitr::include_graphics("figs/Dmel_5.PPI251.pdf")
+knitr::include_graphics("figs/Dmel_6.PPI251.pdf")
+knitr::include_graphics("figs/Dmel_7.PPI251.pdf")
 
 ```
-
-Perhaps unnecessary.
