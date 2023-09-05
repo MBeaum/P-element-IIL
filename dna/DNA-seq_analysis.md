@@ -80,8 +80,10 @@ coverage plots.
 nohup zsh deviate-family.sh iil PPI251 > /Volumes/Data/Projects/invaded_inbred_lines/logs/IIlines.log &
 ```
 
-This provided us with the following PDFs for each of the lines assessed
-()
+\##Coverage plots
+
+After converting to pngs, this provided us with the following DeviaTE
+plots for each of the lines assessed ()
 
 ``` r
 knitr::include_graphics("figs/deviaTE_png/Dmel_1.PPI251.png")
@@ -210,12 +212,6 @@ knitr::include_graphics("figs/deviaTE_png/Dsim_20.PPI251.png")
 <img src="figs/deviaTE_png/Dsim_20.PPI251.png" width="7083" />
 
 ``` r
-knitr::include_graphics("figs/deviaTE_png/Dsim_N2.PPI251.png")
-```
-
-<img src="figs/deviaTE_png/Dsim_N2.PPI251.png" width="7083" />
-
-``` r
 knitr::include_graphics("figs/deviaTE_png/Dyak_21.PPI251.png")
 ```
 
@@ -274,3 +270,27 @@ knitr::include_graphics("figs/deviaTE_png/Dyak_N3.PPI251.png")
 ```
 
 <img src="figs/deviaTE_png/Dyak_N3.PPI251.png" width="7083" />
+
+Note that three of the lines are missing (17, N2 and 22), for line 17,
+we believe that this line was at some point contaminated with d.mel, as
+it has the same insertion coverage as many of the d.mel lines.
+
+``` r
+knitr::include_graphics("figs/deviaTE_png/Dsim_17.PPI251.png")
+```
+
+<img src="figs/deviaTE_png/Dsim_17.PPI251.png" width="7083" />
+
+As for lines N2 and 22, they returned little to no data after
+demultiplexing, even after attempting to use other index sequences in
+the hope that there was a labeling mishap, nothing was found.
+
+In addition, we can also see that the supposed naive lines (N1, N2 and
+N3), were perhaps not so naive after all. As their respective deviaTE
+coverage plots show at least a low level of coverage throughout,
+denoting a potential contamination of these two samples by their invaded
+coounterparts.
+
+However, PCR results for these lines came back clean, suggesting that
+the error instead lied with the sequencing data, rather than the
+experimental populations themselves.
