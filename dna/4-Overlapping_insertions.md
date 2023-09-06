@@ -1,0 +1,420 @@
+4 - Overlapping insertions
+================
+Matthew Beaumont
+2023-09-06
+
+## Overlapping insertions - all
+
+We wanted to assess the number and frequency of similar/overlapping
+insertions across all replicates in each species. This way, if we had
+insertions of high frequencies overlapping with insertions of lower
+frequencies in other samples, we could attribute this to
+cross-contamination. This would also give us an idea as to the degree of
+cross-contamination, were we to find any.
+
+Here, we visualised all the insertions in all replicates of each
+species, using a stacked bar approach to identify overlapping
+insertions, within a 1000bp window.
+
+### Dmel
+
+``` r
+dma <- read.delim("/Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dmel/dmel.teinsertions", header = FALSE, sep = "\t", col.names = c("Sample_ID", "Chromosome", "Position", "Empty", "TE", "Order", "Strand", "Comment", "Frequency"))
+
+desired_chromosomes <- c("X", "2L", "2R", "3L", "3R", "4")
+dma <- subset(dma, Chromosome %in% desired_chromosomes)
+
+dma$Sample_ID <- as.factor(dma$Sample_ID)
+
+library(dplyr)
+```
+
+    ## 
+    ## Attaching package: 'dplyr'
+
+    ## The following objects are masked from 'package:stats':
+    ## 
+    ##     filter, lag
+
+    ## The following objects are masked from 'package:base':
+    ## 
+    ##     intersect, setdiff, setequal, union
+
+``` r
+dma <- dma %>%
+  mutate(Position = as.numeric(Position)) %>%
+  group_by(Chromosome, Sample_ID, Window = floor(Position/1000)) %>%
+  summarise(Cumulative_Frequency_dma = sum(Frequency)) %>%
+  ungroup()
+```
+
+    ## `summarise()` has grouped output by 'Chromosome', 'Sample_ID'. You can override
+    ## using the `.groups` argument.
+
+``` r
+library(tidyr)
+data_stacked_dma <- dma %>%
+  pivot_wider(names_from = Sample_ID, values_from = Cumulative_Frequency_dma, values_fill = 0) %>%
+  gather(Sample_ID, Cumulative_Frequency_dma, -Chromosome, -Window) %>%
+  arrange(Chromosome, Window)
+
+library(ggplot2)
+
+plot_dmelall <- ggplot(data_stacked_dma, aes(x = Window, y = Cumulative_Frequency_dma, fill = Sample_ID)) +
+  geom_bar(stat = "identity", position = "stack", color = "black", width = 150) +
+  labs(x = "Window", y = "cumulative frequency", fill = "Sample ID") +
+  theme_minimal() +
+  facet_wrap(~ Chromosome, scales = "free_x", ncol = 1) +
+  theme(plot.background = element_rect(fill = "white"),
+        strip.placement = "outside",
+        strip.background = element_blank(),
+        strip.text = element_text(hjust = 0.5, margin = margin(b = 10)))
+
+output_dmelall <- "dna/figs/overlaps/dmel_overlap_all.png"
+ggsave(output_dmelall, plot = plot_dmelall, width = 8, height = 14)
+```
+
+    ## Warning: `position_stack()` requires non-overlapping x intervals
+    ## `position_stack()` requires non-overlapping x intervals
+    ## `position_stack()` requires non-overlapping x intervals
+    ## `position_stack()` requires non-overlapping x intervals
+    ## `position_stack()` requires non-overlapping x intervals
+    ## `position_stack()` requires non-overlapping x intervals
+
+``` r
+knitr::include_graphics(output_dmelall)
+```
+
+<img src="dna/figs/overlaps/dmel_overlap_all.png" width="2400" />
+
+### Dsim
+
+``` r
+dsa <- read.delim("/Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dsim/dsim.teinsertions", header = FALSE, sep = "\t", col.names = c("Sample_ID", "Chromosome", "Position", "Empty", "TE", "Order", "Strand", "Comment", "Frequency"))
+
+desired_chromosomes <- c("X", "2L", "2R", "3L", "3R")
+dsa <- subset(dsa, Chromosome %in% desired_chromosomes)
+
+dsa$Sample_ID <- as.factor(dsa$Sample_ID)
+
+library(dplyr)
+dsa <- dsa %>%
+  group_by(Chromosome, Sample_ID, Window = floor(Position/1000)) %>%
+  summarise(Cumulative_Frequency_dsa = sum(Frequency)) %>%
+  ungroup()
+```
+
+    ## `summarise()` has grouped output by 'Chromosome', 'Sample_ID'. You can override
+    ## using the `.groups` argument.
+
+``` r
+library(tidyr)
+data_stacked_dsa <- dsa %>%
+  pivot_wider(names_from = Sample_ID, values_from = Cumulative_Frequency_dsa, values_fill = 0) %>%
+  gather(Sample_ID, Cumulative_Frequency_dsa, -Chromosome, -Window) %>%
+  arrange(Chromosome, Window)
+
+library(ggplot2)
+
+plot_dsimall <- ggplot(data_stacked_dsa, aes(x = Window, y = Cumulative_Frequency_dsa, fill = Sample_ID)) +
+  geom_bar(stat = "identity", position = "stack", color = "black", width = 150) +
+  labs(x = "Window", y = "cumulative frequency", fill = "Sample ID") +
+  theme_minimal() +
+  facet_wrap(~ Chromosome, scales = "free_x", ncol = 1) +
+  theme(plot.background = element_rect(fill = "white"),
+        strip.placement = "outside",
+        strip.background = element_blank(),
+        strip.text = element_text(hjust = 0.5, margin = margin(b = 10)))
+
+output_dsimall <- "dna/figs/overlaps/dsim_overlap_all.png"
+ggsave(output_dsimall, plot = plot_dsimall, width = 8, height = 14)
+```
+
+    ## Warning: `position_stack()` requires non-overlapping x intervals
+    ## `position_stack()` requires non-overlapping x intervals
+    ## `position_stack()` requires non-overlapping x intervals
+    ## `position_stack()` requires non-overlapping x intervals
+    ## `position_stack()` requires non-overlapping x intervals
+
+``` r
+knitr::include_graphics(output_dsimall)
+```
+
+<img src="dna/figs/overlaps/dsim_overlap_all.png" width="2400" />
+
+### Dyak
+
+``` r
+dya <- read.delim("/Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dyak/dyak.teinsertions", header = FALSE, sep = "\t", col.names = c("Sample_ID", "Chromosome", "Position", "Empty", "TE", "Order", "Strand", "Comment", "Frequency"))
+
+desired_chromosomes <- c("X", "2L", "2R", "3L", "3R")
+dya <- subset(dya, Chromosome %in% desired_chromosomes)
+
+dya$Sample_ID <- as.factor(dya$Sample_ID)
+
+library(dplyr)
+dya <- dya %>%
+  group_by(Chromosome, Sample_ID, Window = floor(Position/1000)) %>%
+  summarise(Cumulative_Frequency_dya = sum(Frequency)) %>%
+  ungroup()
+```
+
+    ## `summarise()` has grouped output by 'Chromosome', 'Sample_ID'. You can override
+    ## using the `.groups` argument.
+
+``` r
+library(tidyr)
+data_stacked_dya <- dya %>%
+  pivot_wider(names_from = Sample_ID, values_from = Cumulative_Frequency_dya, values_fill = 0) %>%
+  gather(Sample_ID, Cumulative_Frequency_dya, -Chromosome, -Window) %>%
+  arrange(Chromosome, Window)
+
+library(ggplot2)
+
+plot_dyakall <- ggplot(data_stacked_dya, aes(x = Window, y = Cumulative_Frequency_dya, fill = Sample_ID)) +
+  geom_bar(stat = "identity", position = "stack", color = "black", width = 150) +
+  labs(x = "Window", y = "cumulative frequency", fill = "Sample ID") +
+  theme_minimal() +
+  facet_wrap(~ Chromosome, scales = "free_x", ncol = 1) +
+  theme(plot.background = element_rect(fill = "white"),
+        strip.placement = "outside",
+        strip.background = element_blank(),
+        strip.text = element_text(hjust = 0.5, margin = margin(b = 10)))
+
+output_dyakall <- "dna/figs/overlaps/dyak_overlap_all.png"
+ggsave(output_dyakall, plot = plot_dyakall, width = 8, height = 14)
+```
+
+    ## Warning: `position_stack()` requires non-overlapping x intervals
+    ## `position_stack()` requires non-overlapping x intervals
+    ## `position_stack()` requires non-overlapping x intervals
+    ## `position_stack()` requires non-overlapping x intervals
+    ## `position_stack()` requires non-overlapping x intervals
+
+``` r
+knitr::include_graphics(output_dyakall)
+```
+
+<img src="dna/figs/overlaps/dyak_overlap_all.png" width="2400" />
+
+## Overlapping insertions - filtered
+
+However, this approach was too noisy to visually assess poignant
+overlapping insertions, so we tried to pre-filter down the input file to
+only contain insertions which were overlapping.
+
+To do so, we used the following script to identify insertions on the
+same chromosome which overlap (+-500 bases).
+
+``` python
+#!/usr/bin/env python
+
+import pandas as pd
+
+df = pd.read_csv('/Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dyak/dyak.teinsertions', delimiter='\t', header=None)
+df.columns = ['sample_id', 'chromosome', 'position', 'strand', 'TE_family', 'TE_order', 'support', 'comment', 'frequency']
+
+# Sort dataframe
+df.sort_values(['chromosome', 'position'], inplace=True)
+
+window_size = 500
+
+# Create new column for window
+df['window_start'] = df['position'] - window_size
+df['window_end'] = df['position'] + window_size
+
+# Group data by chromosome
+groups = df.groupby('chromosome')
+
+output_lines = [] 
+
+for _, group in groups:
+    overlaps = set()  # Store unique combos
+    for _, row in group.iterrows():
+        overlapping_rows = group[
+            (group['window_end'] >= row['window_start']) & (group['window_start'] <= row['window_end'])
+        ]
+        # Exclude current row
+        overlapping_rows = overlapping_rows[overlapping_rows['sample_id'] != row['sample_id']]
+        
+        if len(overlapping_rows) > 0:
+            # Store unique combos of overlapping ins
+            for _, overlap_row in overlapping_rows.iterrows():
+                overlap_info = f"Sample ID: {overlap_row['sample_id']} | Chromosome: {overlap_row['chromosome']} | " \
+                               f"Position: {overlap_row['position']} | Frequency: {overlap_row['frequency']}"
+                overlaps.add(overlap_info)
+    
+    if len(overlaps) > 0:
+        chromosome = group['chromosome'].iloc[0]
+        output_lines.append(f"Chromosome {chromosome}:")
+        output_lines.append("Samples with overlapping insertions:\n")
+        output_lines.extend(sorted(overlaps, key=lambda x: int(x.split("Position:")[1].split(" |")[0].strip())))
+        output_lines.append("\n")
+
+with open('dyak_window_overlap.txt', 'w') as output_file:
+    output_file.write('\n'.join(output_lines))
+```
+
+We took this output and visualised it on a stacked bar graph, where each
+chromosome another divided into 1000bp windows, showing the cumulative
+frequency of the insertion across all replicates.
+
+### Dmel filtered
+
+``` r
+data <- read.delim("/Volumes/Data/Projects/invaded_inbred_lines/scripts/dmel_window_overlap.txt", header = FALSE, sep = "\t", col.names = c("Sample_ID", "Chromosome", "Position", "Frequency"))
+
+desired_chromosomes <- c("X", "2L", "2R", "3L", "3R")
+data <- subset(data, Chromosome %in% desired_chromosomes)
+
+data$Sample_ID <- as.factor(data$Sample_ID)
+
+library(dplyr)
+data <- data %>%
+  group_by(Chromosome, Sample_ID, Window = floor(Position/1000)) %>%
+  summarise(Cumulative_Frequency_dm = sum(Frequency)) %>%
+  ungroup()
+```
+
+    ## `summarise()` has grouped output by 'Chromosome', 'Sample_ID'. You can override
+    ## using the `.groups` argument.
+
+``` r
+library(tidyr)
+data_stacked <- data %>%
+  pivot_wider(names_from = Sample_ID, values_from = Cumulative_Frequency_dm, values_fill = 0) %>%
+  gather(Sample_ID, Cumulative_Frequency_dm, -Chromosome, -Window) %>%
+  arrange(Chromosome, Window)
+
+library(ggplot2)
+
+plot_dmel <- ggplot(data_stacked, aes(x = Window, y = Cumulative_Frequency_dm, fill = Sample_ID)) +
+  geom_bar(stat = "identity", position = "stack", color = "black", width = 125) +
+  labs(x = "Window", y = "cumulative frequency", fill = "Sample ID") +
+  theme_minimal() +
+  facet_wrap(~ Chromosome, scales = "free_x", ncol = 1) +
+  theme(plot.background = element_rect(fill = "white"),
+        strip.placement = "outside",
+        strip.background = element_blank(),
+        strip.text = element_text(hjust = 0.5, margin = margin(b = 10)))
+
+output_dmel <- "dna/figs/overlaps/dmel_overlap.png"
+ggsave(output_dmel, plot = plot_dmel, width = 8, height = 14)
+```
+
+    ## Warning: `position_stack()` requires non-overlapping x intervals
+    ## `position_stack()` requires non-overlapping x intervals
+    ## `position_stack()` requires non-overlapping x intervals
+    ## `position_stack()` requires non-overlapping x intervals
+    ## `position_stack()` requires non-overlapping x intervals
+
+``` r
+knitr::include_graphics(output_dmel)
+```
+
+<img src="dna/figs/overlaps/dmel_overlap.png" width="2400" />
+
+### Dsim filtered
+
+``` r
+data <- read.delim("/Volumes/Data/Projects/invaded_inbred_lines/scripts/dsim_window_overlap.txt", header = FALSE, sep = "\t", col.names = c("Sample_ID", "Chromosome", "Position", "Frequency"))
+
+desired_chromosomes <- c("X", "2L", "2R", "3L", "3R")
+data <- subset(data, Chromosome %in% desired_chromosomes)
+
+data$Sample_ID <- as.factor(data$Sample_ID)
+
+library(dplyr)
+data <- data %>%
+  group_by(Chromosome, Sample_ID, Window = floor(Position/1000)) %>%
+  summarise(Cumulative_Frequency_ds = sum(Frequency)) %>%
+  ungroup()
+```
+
+    ## `summarise()` has grouped output by 'Chromosome', 'Sample_ID'. You can override
+    ## using the `.groups` argument.
+
+``` r
+library(tidyr)
+data_stacked_ds <- data %>%
+  pivot_wider(names_from = Sample_ID, values_from = Cumulative_Frequency_ds, values_fill = 0) %>%
+  gather(Sample_ID, Cumulative_Frequency_ds, -Chromosome, -Window) %>%
+  arrange(Chromosome, Window)
+
+library(ggplot2)
+
+plot_dsim <- ggplot(data_stacked_ds, aes(x = Window, y = Cumulative_Frequency_ds, fill = Sample_ID)) +
+  geom_bar(stat = "identity", position = "stack", color = "black", width = 150) +
+  labs(x = "Window", y = "cumulative frequency", fill = "Sample ID") +
+  theme_minimal() +
+  facet_wrap(~ Chromosome, scales = "free_x", ncol = 1) +
+  theme(plot.background = element_rect(fill = "white"),
+        strip.placement = "outside",
+        strip.background = element_blank(),
+        strip.text = element_text(hjust = 0.5, margin = margin(b = 10)))
+
+output_dsim <- "dna/figs/overlaps/dsim_overlap.png"
+ggsave(output_dsim, plot = plot_dsim, width = 8, height = 14)
+```
+
+    ## Warning: `position_stack()` requires non-overlapping x intervals
+    ## `position_stack()` requires non-overlapping x intervals
+    ## `position_stack()` requires non-overlapping x intervals
+
+``` r
+knitr::include_graphics(output_dsim)
+```
+
+<img src="dna/figs/overlaps/dsim_overlap.png" width="2400" />
+
+### Dyak filtered
+
+``` r
+data <- read.delim("/Volumes/Data/Projects/invaded_inbred_lines/scripts/dyak_window_overlap.txt", header = FALSE, sep = "\t", col.names = c("Sample_ID", "Chromosome", "Position", "Frequency"))
+
+desired_chromosomes <- c("X", "2L", "2R", "3L", "3R")
+data <- subset(data, Chromosome %in% desired_chromosomes)
+
+data$Sample_ID <- as.factor(data$Sample_ID)
+
+library(dplyr)
+data <- data %>%
+  group_by(Chromosome, Sample_ID, Window = floor(Position/1000)) %>%
+  summarise(Cumulative_Frequency_dy = sum(Frequency)) %>%
+  ungroup()
+```
+
+    ## `summarise()` has grouped output by 'Chromosome', 'Sample_ID'. You can override
+    ## using the `.groups` argument.
+
+``` r
+library(tidyr)
+data_stacked <- data %>%
+  pivot_wider(names_from = Sample_ID, values_from = Cumulative_Frequency_dy, values_fill = 0) %>%
+  gather(Sample_ID, Cumulative_Frequency_dy, -Chromosome, -Window) %>%
+  arrange(Chromosome, Window)
+
+library(ggplot2)
+
+plot_dyak <- ggplot(data_stacked, aes(x = Window, y = Cumulative_Frequency_dy, fill = Sample_ID)) +
+  geom_bar(stat = "identity", position = "stack", color = "black", width = 90) +
+  labs(x = "Window", y = "cumulative frequency", fill = "Sample ID") +
+  theme_minimal() +
+  facet_wrap(~ Chromosome, scales = "free_x", ncol = 1) +
+  theme(plot.background = element_rect(fill = "white"),
+        strip.placement = "outside",
+        strip.background = element_blank(),
+        strip.text = element_text(hjust = 0.5, margin = margin(b = 10)))
+
+output_dyak <- "dna/figs/overlaps/dyak_overlap.png"
+ggsave(output_dyak, plot = plot_dyak, width = 8, height = 14)
+
+knitr::include_graphics(output_dyak)
+```
+
+<img src="dna/figs/overlaps/dyak_overlap.png" width="2400" />
+
+These results, in combination with those prior, led us to the conclusion
+that the data provided from the VBCF suffered from an extreme amount of
+index-hopping. This resulted in the “non-naive” naive samples and the
+abundance of overlapping low frequency insertions we see above.

@@ -1,5 +1,5 @@
 ---
-title: "BGI data analysis"
+title: "5 - BGI data analysis"
 author: "Matthew Beaumont"
 date: "`r Sys.Date()`"
 output: github_document
@@ -8,6 +8,12 @@ output: github_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+After sending 5 of the most inbred populations, plus the 2 d.mel lines used for the original PALs, to BGI instead of VBCF, we aimed to gain a clearer insight into the population frequency of P-element insertions. 
+
+## Manhattan plots
+
+First, we visualised the PopTE2 output as manahattan plots, displaying the pop frequency of insertions as done before.
 
 ``` {R}
 library(viridisLite)
@@ -69,7 +75,11 @@ knitr::include_graphics("dna/figs/dsim_bgi_popTE2_all.png")
 
 ```
 
-```{bash}
+We then assessed each line individually.
+
+### Dmel
+
+```{bash, eval=FALSE}
 awk '{print > "bgi/replicates/" $1 ".teinsertions"}' bgi/dmel_bgi.teinsertions
 
 ```
@@ -118,6 +128,7 @@ knitr::include_graphics("dna/figs/dmel_bgi_popTE2.png")
 
 ```
 
+### Dsim
 
 ``` {R}
 library(ggplot2)
@@ -163,27 +174,134 @@ knitr::include_graphics("dna/figs/dsim_bgi_popTE2.png")
 
 ```
 
+We can plainly see that the BGI data is far cleaner than the VBCF data, with the majority of insertions found now being shown to be near fixation. This highlights the index-hopping issue suffered with the previous sequencing dataset. 
 
-#RIdeogram
+Unfortunately, the two lines used for the original PAL generation (replicates 1 & 5 above), were the two lines with the lowest amount of fixation of all the lines assessed. This led us to restart the PAL lines, this time using the two best lines we identified above (d.mel replicate 2 and d.sim replicate 2).
+
+## RIdeogram
+
+We wanted to create ideograms of the drosophila karyotypes containing the P-element, to better visualise the insertions across the genome. To do so we used a package called RIdeogram.
+
+First, we must create a dataset containing the d.mel and d.sim karyotype data (obtained from the NCBI uploads of the reference genomes).
 
 ```{R}
+dmel_karyotype <- read.table("/Volumes/Data/Tools/RefGenomes/karyotypes_dmel.txt", sep = "\t", header = T, stringsAsFactors = F)
+dsim_karyotype <- read.table("/Volumes/Data/Tools/RefGenomes/karyotypes_dsim.txt", sep = "\t", header = T, stringsAsFactors = F)
+
+head(dmel_karyotype)
+head(dsim_karyotype)
+
+```
+
+We then need to transform the output .txt file from PopTE2 in. order to fit the RIdeogram package.
+
+```{python, echo=TRUE, python.reticulate=FALSE, eval=FALSE}
+input_file_path = '/Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dsim/bgi/dsim_bgi.teinsertions'
+output_file_path = '/Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dsim/bgi/dsim_all_10x.txt'
+
+with open(input_file_path, 'r') as f:
+    lines = f.readlines()
+
+# Set offset value (How much you want to increase size of insertion)
+offset_multiplier = 5
+offset = 2907 * offset_multiplier
+
+new_content = []
+for line in lines:
+    columns = line.strip().split('\t')
+    chromosome = columns[1]
+    start = int(columns[2]) - offset
+    end = int(columns[2]) + offset
+    frequency = columns[-1]
+    new_line = f"{chromosome}\t{start}\t{end}\t{frequency}\n"
+    new_content.append(new_line)
+
+with open(output_file_path, 'w') as f:
+    f.writelines(new_content)
+
+# Load karyotype dataset
+karyotype_data = {
+    'X': (0, 22032822),
+    '2L': (0, 23857595),
+    '2R': (0, 22319025),
+    '3L': (0, 23399903),
+    '3R': (0, 28149585),
+    '4': (0, 1146867)
+}
+
+with open(output_file_path, 'r') as f:
+    existing_lines = f.readlines()
+
+new_content = []
+for chromosome, (start, end) in karyotype_data.items():
+    chromosome_lines = []
+    for line in existing_lines:
+        columns = line.strip().split('\t')
+        chr_name = columns[0]
+        chr_start = int(columns[1])
+        chr_end = int(columns[2])
+
+        if chr_name == chromosome:
+            chromosome_lines.append((chr_start, chr_end, line))
+
+    chromosome_lines.sort()  # Sort based on start / end
+
+    prev_end = start
+    for chr_start, chr_end, line in chromosome_lines:
+        if prev_end < chr_start:
+            new_line = f"{chromosome}\t{prev_end}\t{chr_start}\t0\n"
+            new_content.append(new_line)
+        new_content.append(line)
+        prev_end = chr_end
+
+    if prev_end < end:
+        new_line = f"{chromosome}\t{prev_end}\t{end}\t0\n"
+        new_content.append(new_line)
+
+new_header = "Chr\tStart\tEnd\tValue\n"
+
+final_content = new_header + ''.join(new_content)
+
+with open(output_file_path, 'w') as f:
+    f.write(final_content)
+
+```
+
+The above python script converts the .teinsertions file into a usable format, increasing the size of the P-element insertions 50-fold, for visual clarity (data for d.sim karyotype is shown). 
+
+We then fill in the blanks in between the insertions, with frequency of 0, using the ascertained karyotype data from NCBI.
+
+We then run the RIdeogram package to generate the ideogram for each population, using the newly generated insertion dataset, and the karyotype data.
+
+```{R, eval=FALSE}
 require(RIdeogram)
 library(RColorBrewer)
 
 dmel_karyotype <- read.table("/Volumes/Data/Tools/RefGenomes/karyotypes_dmel.txt", sep = "\t", header = T, stringsAsFactors = F)
 dsim_karyotype <- read.table("/Volumes/Data/Tools/RefGenomes/karyotypes_dsim.txt", sep = "\t", header = T, stringsAsFactors = F)
 
-dmel_freq <- read.table("/Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dmel/bgi/replicates/dmel_3.txt", sep = "\t", header = T, stringsAsFactors = F)
-dsim_freq <- read.table("/Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dsim/bgi/dsim_14_100x.txt", sep = "\t", header = T, stringsAsFactors = F)
+dmel_freq <- read.table("/Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dmel/bgi/dmel_all_10x.txt", sep = "\t", header = T, stringsAsFactors = F)
 
-ideogram(karyotype = dsim_karyotype)
-convertSVG("chromosome.svg", device = "png")
+dsim_freq <- read.table("/Volumes/Data/Projects/invaded_inbred_lines/dna/popTE2/dsim/bgi/dsim_all_10x.txt", sep = "\t", header = T, stringsAsFactors = F)
 
-#ideogram(karyotype = dmel_karyotype, overlaid = dmel_freq, width = 100)
-#svg2png("chromosome.svg", dpi = 500)
+ideogram(karyotype = dmel_karyotype, overlaid = dmel_freq, width = 75, colorset1 = brewer.pal(9, "Blues"))
+convertSVG("figs/RIdeogram/chromosome.svg", device = "png", dpi = 1200)
 
-#ideogram(karyotype = dsim_karyotype, overlaid = dsim_freq, width = 75, colorset1 = brewer.pal(9, "Blues"))
-#convertSVG("chromosome.svg", device = "png")
+ideogram(karyotype = dsim_karyotype, overlaid = dsim_freq, width = 75, colorset1 = brewer.pal(9, "Blues"))
+convertSVG("figs/RIdeogram/chromosome.svg", device = "png")
 
-#knitr::include_graphics("chromosome.png")
+```
+
+This will generate an svg and a png of the ideogram, titled "chromosome" (can't be changed?), which we then manually altered in inkscape for greater visibility/neater output (centromeres added, 2R, 3R and 4 rotated so all centromeres appear at base).
+
+### D.mel - replicate 2
+
+```{R}
+knitr::include_graphics("figs/RIdeogram/dmel_3_50x.png")
+```
+
+### D.sim - replicate 2
+
+```{R}
+knitr::include_graphics("figs/RIdeogram/dsim_14_50x.png")
 ```
