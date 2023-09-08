@@ -59,6 +59,7 @@ fastqc -o /Volumes/Data/Projects/invaded_inbred_lines/dna/demultiplexed/fastq/fa
 ```
 
 ``` {bash}
-ls /Volumes/Data/Projects/invaded_inbred_lines/dna/demultiplexed/fastq/fastQC
+cd /Volumes/Data/Projects/invaded_inbred_lines/dna/demultiplexed/fastq/fastQC
+ls -h *.html
 ```
 All output fastQC reports came back at an acceptable level, so we moved onto the next stage of analysis.
