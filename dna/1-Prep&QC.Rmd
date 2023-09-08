@@ -54,7 +54,11 @@ done
 
 We then ran the fastQC tool to assess the quality of the fq.gz files for each individual sample, granting the following results.
 
-``` {bash eval=FALSE}
-
-
+``` {bash, eval=FALSE}
+fastqc -o /Volumes/Data/Projects/invaded_inbred_lines/dna/demultiplexed/fastq/fastQC -t 68 *.fq.gz
 ```
+
+``` {bash}
+ls /Volumes/Data/Projects/invaded_inbred_lines/dna/demultiplexed/fastq/fastQC
+```
+All output fastQC reports came back at an acceptable level, so we moved onto the next stage of analysis.
