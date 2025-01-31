@@ -1,7 +1,7 @@
 5 - BGI data analysis
 ================
 Matthew Beaumont
-2023-09-06
+2024-05-31
 
 After sending 5 of the most inbred populations, plus the 2 d.mel lines
 used for the original PALs, to BGI instead of VBCF, we aimed to gain a
@@ -117,7 +117,7 @@ for (i in 1:5) {
                        breaks = seq(0, 1, by = 0.1)) +
     scale_color_gradient(low = "blue", high = "red") +
     theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 14)) +
-    labs(title = paste("P-element insertion frequencies in D. melanogaster - replicate", i))
+    labs(title = paste("Replicate", i))
   
   plots[[i]] <- plot
 }
@@ -192,9 +192,9 @@ fixation. This highlights the index-hopping issue suffered with the
 previous sequencing dataset.
 
 Unfortunately, the two lines used for the original PAL generation
-(replicates 1 & 5 above), were the two lines with the lowest amount of
-fixation of all the lines assessed. This led us to restart the PAL
-lines, this time using the two best lines we identified above (d.mel
+(d. mel replicates 1 & 5 above), were the two lines with the lowest
+amount of fixation of all the lines assessed. This led us to restart the
+PAL lines, this time using the two best lines we identified above (d.mel
 replicate 2 and d.sim replicate 2).
 
 ## RIdeogram

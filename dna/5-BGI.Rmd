@@ -115,7 +115,7 @@ for (i in 1:5) {
                        breaks = seq(0, 1, by = 0.1)) +
     scale_color_gradient(low = "blue", high = "red") +
     theme(legend.position = "none", plot.title = element_text(hjust = 0.5, size = 14)) +
-    labs(title = paste("P-element insertion frequencies in D. melanogaster - replicate", i))
+    labs(title = paste("Replicate", i))
   
   plots[[i]] <- plot
 }
@@ -176,7 +176,7 @@ knitr::include_graphics("dna/figs/dsim_bgi_popTE2.png")
 
 We can plainly see that the BGI data is far cleaner than the VBCF data, with the majority of insertions found now being shown to be near fixation. This highlights the index-hopping issue suffered with the previous sequencing dataset. 
 
-Unfortunately, the two lines used for the original PAL generation (replicates 1 & 5 above), were the two lines with the lowest amount of fixation of all the lines assessed. This led us to restart the PAL lines, this time using the two best lines we identified above (d.mel replicate 2 and d.sim replicate 2).
+Unfortunately, the two lines used for the original PAL generation (d. mel replicates 1 & 5 above), were the two lines with the lowest amount of fixation of all the lines assessed. This led us to restart the PAL lines, this time using the two best lines we identified above (d.mel replicate 2 and d.sim replicate 2).
 
 ## RIdeogram
 
