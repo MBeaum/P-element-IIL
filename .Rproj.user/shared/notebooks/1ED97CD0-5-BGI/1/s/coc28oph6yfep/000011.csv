@@ -1,4 +1,0 @@
-"0",""
-"0","ggsave(""dna/figs/dmel_bgi_popTE2.png"", grid, width = 24, height = 14, dpi = 300)"
-"0",""
-"0","knitr::include_graphics(""dna/figs/dmel_bgi_popTE2.png"")"
